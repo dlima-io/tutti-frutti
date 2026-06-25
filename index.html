@@ -771,6 +771,9 @@ function calcularPuntos(letra) {
 
       if (!r) { /* 0 */ return; }
 
+      // Una sola letra = 0 puntos (no inválida, simplemente no cuenta)
+      if (norm.length <= 1) { return; }
+
       // Verificar que empiece con la letra correcta
       if (!norm.startsWith(normalizar(letra))) {
         puntajesRonda[n] -= 1; // inválida
@@ -824,6 +827,8 @@ function mostrarResultados() {
       const v = vals[j];
       if (!r) {
         row += `<td><span class="rbadge vacia">—</span></td>`;
+      } else if (v.length <= 1) {
+        row += `<td><span class="rbadge vacia">— ${r}</span></td>`;
       } else if (!v.startsWith(norm)) {
         row += `<td><span class="rbadge inv">❌ ${r}</span></td>`;
       } else {
