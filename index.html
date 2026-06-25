@@ -3,298 +3,716 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tutti Frutti</title>
+<title>🍓 Tutti Frutti</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f4f0; min-height: 100vh; color: #1a1a1a; }
-  .page { padding: 1.5rem; max-width: 580px; margin: 0 auto; }
-  h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
-  .sub { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
-  .card { background: white; border: 1px solid #e5e5e5; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; }
-  .field { margin-bottom: 1rem; }
-  .field:last-child { margin-bottom: 0; }
-  .field label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
-  .field input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 16px; font-family: inherit; background: #fafafa; outline: none; transition: border-color 0.15s; }
-  .field input:focus { border-color: #888; background: white; }
-  .divider { text-align: center; font-size: 13px; color: #aaa; margin: 12px 0; }
-  .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 15px; font-family: inherit; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-dark { background: #1a1a1a; color: white; }
-  .btn-dark:hover:not(:disabled) { background: #333; }
-  .btn-outline { background: white; color: #1a1a1a; border: 1px solid #ddd; margin-top: 8px; }
-  .btn-outline:hover:not(:disabled) { background: #f5f5f5; }
-  .btn-stop { background: #ef4444; color: white; font-size: 20px; font-weight: 700; padding: 18px; letter-spacing: 2px; border-radius: 14px; width: 100%; border: none; cursor: pointer; transition: all 0.15s; }
-  .btn-stop:active { transform: scale(0.97); }
-  .btn-stop:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-  .status-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: white; border: 1px solid #e5e5e5; border-radius: 10px; margin-bottom: 12px; font-size: 13px; color: #555; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
-  .dot.verde { background: #22c55e; }
-  .dot.amarillo { background: #f59e0b; }
-  .dot.rojo { background: #ef4444; }
-  .players-wrap { margin-bottom: 12px; }
-  .players-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e5e5; font-size: 13px; background: #fafafa; color: #888; white-space: nowrap; }
-  .chip.yo { border-color: #1a1a1a; color: #1a1a1a; background: white; font-weight: 500; }
-  .chip.listo { border-color: #22c55e; color: #15803d; background: #f0fdf4; }
-  .chip.entregado { border-color: #3b82f6; color: #1d4ed8; background: #eff6ff; }
-  .letra-grande { font-size: 80px; font-weight: 700; text-align: center; line-height: 1; padding: 1rem 0 0.5rem; color: #1a1a1a; }
-  .letra-hint { text-align: center; font-size: 13px; color: #888; padding-bottom: 0.75rem; }
-  .categorias { display: flex; flex-direction: column; gap: 8px; }
-  .cat-row { display: flex; align-items: center; gap: 10px; }
-  .cat-label { font-size: 13px; color: #666; width: 130px; flex-shrink: 0; }
-  .cat-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 9px 11px; font-size: 15px; font-family: inherit; background: #fafafa; outline: none; transition: border-color 0.15s; }
-  .cat-input:focus { border-color: #888; background: white; }
-  .cat-input:disabled { opacity: 0.55; cursor: not-allowed; }
-  .cat-input.ok { border-color: #22c55e; background: #f0fdf4; }
-  .cat-input.repetida { border-color: #f59e0b; background: #fffbeb; }
-  .stop-banner { background: #ef4444; color: white; text-align: center; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 16px; margin-bottom: 12px; display: none; }
-  .info-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #92400e; margin-bottom: 1rem; line-height: 1.6; }
-  .sala-grande { font-size: 26px; font-weight: 700; letter-spacing: 5px; }
-  .esperando-resp { font-size: 13px; color: #888; text-align: center; padding: 12px 0; }
-  #setup, #game { display: none; }
+/* ── RESET & BASE ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --border: #e2ddd8;
+  --border-strong: #c8c2bb;
+  --text: #1a1714;
+  --text-2: #6b6560;
+  --text-3: #a8a09a;
+  --accent: #e63946;
+  --accent-dim: #fde8ea;
+  --green: #2a9d5c;
+  --green-dim: #e8f7ef;
+  --amber: #d4820a;
+  --amber-dim: #fef3dc;
+  --blue: #2563eb;
+  --blue-dim: #eff4ff;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
 
-  /* Tabla resultados */
-  .resultados-wrap { overflow-x: auto; }
-  .resultados-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 320px; }
-  .resultados-tabla th { text-align: left; padding: 6px 8px; color: #666; font-weight: 500; border-bottom: 2px solid #f0f0f0; white-space: nowrap; }
-  .resultados-tabla td { padding: 7px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
-  .resultados-tabla td.cat { color: #666; font-size: 12px; white-space: nowrap; }
-  .resultados-tabla tr:last-child td { border-bottom: none; }
-  .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
-  .badge-ok { background: #f0fdf4; color: #15803d; }
-  .badge-vacia { background: #f5f5f5; color: #aaa; }
-  .badge-repetida { background: #fffbeb; color: #92400e; }
-  .fila-total { background: #fafafa; }
-  .fila-total td { font-weight: 600; padding-top: 10px; border-top: 2px solid #e5e5e5; border-bottom: none; }
-  .fila-acum td { color: #666; font-size: 12px; padding-bottom: 4px; border-bottom: none; }
+/* ── SETUP SCREEN ─────────────────────────────────────── */
+#screen-setup {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.setup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+.setup-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.setup-sub { color: var(--text-2); margin-bottom: 1.5rem; font-size: 13px; }
+
+/* ── GAME LAYOUT ──────────────────────────────────────── */
+#screen-game { display: none; height: 100vh; overflow: hidden; }
+
+/* Desktop: dos columnas */
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 100vh;
+  height: 100vh;
+}
+.col-juego {
+  overflow-y: auto;
+  padding: 1.25rem 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.col-chat {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── CARDS ────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+/* ── STATUS BAR ───────────────────────────────────────── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
+.dot.verde { background: var(--green); }
+.dot.amarillo { background: var(--amber); }
+.dot.rojo { background: var(--accent); }
+
+/* ── PLAYERS ──────────────────────────────────────────── */
+.players-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.chip.yo { border-color: var(--text); color: var(--text); font-weight: 600; background: var(--surface); }
+.chip.listo { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.chip.entregado { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+
+/* ── LETRA ────────────────────────────────────────────── */
+.letra-wrap { display: flex; align-items: center; gap: 1rem; }
+.letra-grande {
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  min-width: 80px;
+  text-align: center;
+}
+.letra-meta { flex: 1; }
+.letra-meta h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.letra-meta p { font-size: 12px; color: var(--text-2); }
+
+/* ── FORMULARIO ───────────────────────────────────────── */
+.cat-grid { display: flex; flex-direction: column; gap: 6px; }
+.cat-row { display: flex; align-items: center; gap: 8px; }
+.cat-label { font-size: 12px; color: var(--text-2); width: 120px; flex-shrink: 0; }
+.cat-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  color: var(--text);
+}
+.cat-input:focus { border-color: var(--border-strong); background: var(--surface); }
+.cat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.cat-input.ok { border-color: var(--green); background: var(--green-dim); }
+.cat-input.repetida { border-color: var(--amber); background: var(--amber-dim); }
+.cat-input.invalida { border-color: var(--accent); background: var(--accent-dim); }
+
+/* ── RESULTADOS TABLA ─────────────────────────────────── */
+.resultados-wrap { overflow-x: auto; }
+.rtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rtable th {
+  text-align: left;
+  padding: 6px 8px;
+  color: var(--text-2);
+  font-weight: 500;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  font-size: 12px;
+}
+.rtable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.rtable tr:last-child td { border-bottom: none; }
+.rtable td.cat { color: var(--text-2); font-size: 12px; white-space: nowrap; }
+.rtable tr.fila-total td { font-weight: 700; border-top: 2px solid var(--border); padding-top: 10px; border-bottom: none; background: var(--bg); }
+.rtable tr.fila-acum td { font-size: 12px; color: var(--text-2); border-bottom: none; }
+.rbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.rbadge.ok { background: var(--green-dim); color: var(--green); }
+.rbadge.rep { background: var(--amber-dim); color: var(--amber); }
+.rbadge.inv { background: var(--accent-dim); color: var(--accent); }
+.rbadge.vacia { background: var(--bg); color: var(--text-3); }
+
+/* pts editables */
+.pts-cell { display: flex; align-items: center; gap: 4px; }
+.pts-input {
+  width: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: center;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.pts-input:focus { border-color: var(--border-strong); background: var(--surface); }
+.pts-input:disabled { border-color: transparent; background: transparent; font-weight: 600; }
+
+/* ── BOTONES ──────────────────────────────────────────── */
+.btn {
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-full { width: 100%; }
+.btn-dark { background: var(--text); color: #fff; }
+.btn-dark:hover:not(:disabled) { background: #333; }
+.btn-outline { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-outline:hover:not(:disabled) { background: var(--bg); }
+.btn-stop {
+  background: var(--accent);
+  color: white;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  padding: 14px;
+  border-radius: var(--radius);
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(230,57,70,0.25);
+}
+.btn-stop:active { transform: scale(0.97); }
+.btn-stop:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── STOP BANNER ──────────────────────────────────────── */
+.stop-banner {
+  background: var(--accent);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 15px;
+  display: none;
+}
+
+/* ── INFO BOX ─────────────────────────────────────────── */
+.info-box {
+  background: var(--amber-dim);
+  border: 1px solid #f0d080;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #7a5a00;
+  line-height: 1.5;
+}
+.info-box .sala-code {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ── CHAT (desktop) ───────────────────────────────────── */
+.chat-header-desktop {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-mensajes {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-msg { font-size: 13px; line-height: 1.4; }
+.chat-msg .autor { font-weight: 600; margin-right: 4px; }
+.chat-msg.propio .autor { color: var(--text); }
+.chat-msg.otro .autor { color: var(--blue); }
+.chat-msg.sistema { color: var(--text-3); font-style: italic; font-size: 12px; }
+.chat-msg .hora { font-size: 11px; color: var(--text-3); margin-left: 4px; }
+.chat-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.chat-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--surface);
+  outline: none;
+  color: var(--text);
+}
+.chat-input:focus { border-color: var(--border-strong); }
+.chat-send {
+  background: var(--text);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.chat-send:hover { background: #333; }
+
+/* ── CHAT MOBILE (FAB + popup) ────────────────────────── */
+.chat-fab {
+  display: none;
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--text);
+  color: white;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.chat-fab .fab-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 5px;
+  display: none;
+}
+.chat-popup {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  right: 1.25rem;
+  width: calc(100vw - 2.5rem);
+  max-width: 360px;
+  height: 55vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  z-index: 99;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chat-popup.open { display: flex; }
+.chat-popup-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.chat-popup-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-2);
+  padding: 0;
+}
+
+/* ── FORM FIELDS ──────────────────────────────────────── */
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 5px; font-weight: 500; }
+.field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--bg);
+  outline: none;
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+.field input:focus { border-color: var(--border-strong); background: var(--surface); }
+.divider { text-align: center; font-size: 12px; color: var(--text-3); margin: 14px 0; }
+
+.legend { font-size: 11px; color: var(--text-3); margin-top: 8px; }
+
+/* ── MOBILE ───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  #screen-game { height: auto; min-height: 100vh; overflow: auto; }
+  .game-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+  .col-juego { padding: 1rem; padding-bottom: 5rem; }
+  .col-chat { display: none; }
+  .chat-fab { display: flex; }
+  .letra-grande { font-size: 52px; }
+}
 </style>
 </head>
 <body>
 
-<div class="page" id="setup">
-  <h1>🍓 Tutti Frutti</h1>
-  <p class="sub">Multijugador en tiempo real — hasta 6 jugadores</p>
-  <div class="card">
+<!-- ══ SETUP ══════════════════════════════════════════════ -->
+<div id="screen-setup">
+  <div class="setup-card">
+    <div class="setup-title">🍓 Tutti Frutti</div>
+    <p class="setup-sub">Multijugador en tiempo real</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
     </div>
-    <button class="btn btn-dark" onclick="crearSala()">Crear sala nueva</button>
-    <div class="divider">— o —</div>
+    <button class="btn btn-dark btn-full" onclick="crearSala()">Crear sala nueva</button>
+    <div class="divider">— o unite a una sala —</div>
     <div class="field">
       <label>Código de sala</label>
       <input id="inp-sala" placeholder="Ej: ABC123" maxlength="6"
-        style="text-transform:uppercase;letter-spacing:4px;"
+        style="text-transform:uppercase;letter-spacing:4px;font-weight:700;"
         oninput="this.value=this.value.toUpperCase()" />
     </div>
-    <button class="btn btn-outline" onclick="unirse()">Unirse a sala</button>
+    <button class="btn btn-outline btn-full" onclick="unirse()">Unirse</button>
   </div>
 </div>
 
-<div class="page" id="game">
-  <div class="status-bar">
-    <div class="dot amarillo" id="dot"></div>
-    <span id="estado-conn">Conectando...</span>
-  </div>
+<!-- ══ GAME ═══════════════════════════════════════════════ -->
+<div id="screen-game">
+  <div class="game-layout">
 
-  <div id="info-sala" class="info-box" style="display:none;"></div>
+    <!-- COLUMNA JUEGO -->
+    <div class="col-juego">
 
-  <div class="players-wrap">
-    <div class="players-grid" id="players-grid"></div>
-  </div>
+      <!-- Status + jugadores -->
+      <div class="card" style="padding: 10px 14px;">
+        <div class="status-bar" style="margin-bottom:8px;">
+          <div class="dot amarillo" id="dot"></div>
+          <span id="estado-conn">Conectando...</span>
+        </div>
+        <div class="players-row" id="players-row"></div>
+      </div>
 
-  <div id="stop-banner" class="stop-banner"></div>
+      <!-- Info sala (solo creador, antes de empezar) -->
+      <div class="info-box" id="info-sala" style="display:none;"></div>
 
-  <div class="card">
-    <div class="letra-grande" id="letra">?</div>
-    <div class="letra-hint" id="letra-hint">Esperando que empiece la ronda</div>
-  </div>
+      <!-- Stop banner -->
+      <div class="stop-banner" id="stop-banner"></div>
 
-  <div class="card">
-    <div class="categorias" id="categorias"></div>
-  </div>
+      <!-- Letra -->
+      <div class="card">
+        <div class="letra-wrap">
+          <div class="letra-grande" id="letra">?</div>
+          <div class="letra-meta">
+            <h2 id="letra-titulo">Esperando ronda</h2>
+            <p id="letra-sub" style="color:var(--text-2);font-size:12px;margin-top:2px;"></p>
+          </div>
+        </div>
+      </div>
 
-  <button class="btn btn-stop" id="btn-stop" onclick="cantarStop()" disabled>¡ S T O P !</button>
-  <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;margin-top:10px;">▶ Nueva ronda</button>
+      <!-- Formulario de respuestas (visible durante la ronda) -->
+      <div class="card" id="card-form">
+        <div class="cat-grid" id="cat-grid"></div>
+      </div>
 
-  <div class="card" id="card-resultados" style="display:none;margin-top:1rem;">
-    <div style="font-size:15px;font-weight:600;margin-bottom:12px;">Resultados de la ronda</div>
-    <div id="esperando-otros" class="esperando-resp" style="display:none;"></div>
-    <div class="resultados-wrap">
-      <div id="tabla-resultados"></div>
+      <!-- Resultados (visible al terminar) -->
+      <div class="card" id="card-resultados" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-weight:700;font-size:14px;">Resultados</span>
+          <span id="lbl-editar" style="font-size:12px;color:var(--text-2);display:none;">✏️ Editá los puntos si hay que corregir algo</span>
+        </div>
+        <div class="resultados-wrap">
+          <div id="tabla-resultados"></div>
+        </div>
+        <div class="legend" style="margin-top:10px;">
+          ✅ Original: 10 pts &nbsp;·&nbsp; 🔄 Repetida: 5 pts &nbsp;·&nbsp; ❌ Inválida: −1 pt &nbsp;·&nbsp; — Vacía: 0 pts
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-stop" id="btn-stop" onclick="cantarStop()" disabled>S T O P</button>
+        <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;white-space:nowrap;">▶ Nueva ronda</button>
+      </div>
+
+    </div><!-- /col-juego -->
+
+    <!-- COLUMNA CHAT (desktop) -->
+    <div class="col-chat" id="col-chat-desktop">
+      <div class="chat-header-desktop">💬 Chat del grupo</div>
+      <div class="chat-mensajes" id="chat-msgs-desktop"></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-inp-desktop" placeholder="Mensaje..." maxlength="200"
+          onkeydown="if(event.key==='Enter') enviarChat('desktop')" />
+        <button class="chat-send" onclick="enviarChat('desktop')">↑</button>
+      </div>
     </div>
+
+  </div><!-- /game-layout -->
+</div><!-- /screen-game -->
+
+<!-- CHAT MOBILE: FAB + Popup -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChatMobile()">
+  💬
+  <span class="fab-badge" id="fab-badge"></span>
+</button>
+<div class="chat-popup" id="chat-popup">
+  <div class="chat-popup-header">
+    💬 Chat del grupo
+    <button onclick="toggleChatMobile()">✕</button>
+  </div>
+  <div class="chat-mensajes" id="chat-msgs-mobile"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-inp-mobile" placeholder="Mensaje..." maxlength="200"
+      onkeydown="if(event.key==='Enter') enviarChat('mobile')" />
+    <button class="chat-send" onclick="enviarChat('mobile')">↑</button>
   </div>
 </div>
 
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script>
+// ── CONFIG ────────────────────────────────────────────────
 const ABLY_KEY = "bJht8w.8EuVXg:UgP79w2cCdSsiHUhFLAwVWYg14oMlRXMekWRIKQqSbs";
 const CATEGORIAS = ["Nombre","Apellido","Ciudad","Animal","Fruta o verdura","Color","Marca","País","Película","Cosa u objeto"];
 const LETRAS = "ABCDEFGHIJLMNOPRSTUVZ".split("");
-const MAX_JUGADORES = 6;
 
-let sala = "";
-let miNombre = "";
-let soyCreador = false;
-let juegoActivo = false;
-let bloqueado = false;
+// ── ESTADO ────────────────────────────────────────────────
+let sala = "", miNombre = "", soyCreador = false;
+let juegoActivo = false, bloqueado = false;
 let canal = null;
+let jugadores = {};       // { nombre: { nombre, listo, entregado } }
+let respuestasRonda = {}; // { nombre: [resp0..resp9] }
+let puntajesAcum = {};    // { nombre: pts }
+let puntajesRonda = {};   // { nombre: pts } — editables
+let chatAbierto = false;
+let noLeidos = 0;
 
-// jugadores: { nombre: { nombre, listo, entregado } }
-let jugadores = {};
-// respuestas recibidas esta ronda: { nombre: [resp0..resp9] }
-let respuestasRonda = {};
-// puntajes acumulados: { nombre: pts }
-let puntajesAcum = {};
-
-function genCodigo() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+// ── HELPERS ───────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function genCodigo() { return Math.random().toString(36).substring(2,8).toUpperCase(); }
+function ahora() { return new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}); }
+function normalizar(s) {
+  return (s||"").toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();
 }
 
-function normalizar(str) {
-  return (str || "")
-    .toLowerCase()
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
+// ── SETUP ─────────────────────────────────────────────────
 window.onload = () => {
-  document.getElementById("setup").style.display = "block";
-  document.getElementById("inp-nombre").focus();
+  $("screen-setup").style.display = "flex";
+  $("inp-nombre").focus();
 };
 
 function crearSala() {
-  const nombre = document.getElementById("inp-nombre").value.trim();
-  if (!nombre) { alert("Poné tu nombre primero"); return; }
-  miNombre = nombre;
-  soyCreador = true;
-  sala = genCodigo();
+  const n = $("inp-nombre").value.trim();
+  if (!n) { alert("Poné tu nombre"); return; }
+  miNombre = n; soyCreador = true; sala = genCodigo();
   arrancar();
 }
-
 function unirse() {
-  const nombre = document.getElementById("inp-nombre").value.trim();
-  const cod = document.getElementById("inp-sala").value.trim().toUpperCase();
-  if (!nombre) { alert("Poné tu nombre primero"); return; }
-  if (cod.length < 4) { alert("Ingresá el código de sala"); return; }
-  miNombre = nombre;
-  soyCreador = false;
-  sala = cod;
+  const n = $("inp-nombre").value.trim();
+  const c = $("inp-sala").value.trim().toUpperCase();
+  if (!n) { alert("Poné tu nombre"); return; }
+  if (c.length < 4) { alert("Ingresá el código de sala"); return; }
+  miNombre = n; soyCreador = false; sala = c;
   arrancar();
 }
 
 function arrancar() {
   jugadores[miNombre] = { nombre: miNombre, listo: true, entregado: false };
   puntajesAcum[miNombre] = 0;
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("game").style.display = "block";
-  renderJugadores();
+  $("screen-setup").style.display = "none";
+  $("screen-game").style.display = "block";
   renderCategorias();
+  renderJugadores();
   conectarAbly();
-}
-
-function conectarAbly() {
-  setConn("amarillo", "Conectando...");
-  try {
-    const ably = new Ably.Realtime({ key: ABLY_KEY });
-    canal = ably.channels.get("tutti-" + sala);
-    ably.connection.on("connected", () => {
-      setConn("verde", "Conectado");
-      canal.subscribe(procesarMensaje);
-      enviar("hola", { nombre: miNombre });
-      if (soyCreador) {
-        const box = document.getElementById("info-sala");
-        box.style.display = "block";
-        box.innerHTML = `Compartí este código para que se unan:<br><span class="sala-grande">${sala}</span><br><span style="font-size:12px;color:#b45309;">Pueden unirse hasta ${MAX_JUGADORES} jugadores antes de empezar.</span>`;
-        mostrarBtnNueva();
-      }
-    });
-    ably.connection.on("disconnected", () => setConn("amarillo", "Reconectando..."));
-    ably.connection.on("failed", () => setConn("rojo", "Error de conexión"));
-  } catch(e) {
-    setConn("rojo", "Error al conectar");
+  if (soyCreador) {
+    const b = $("info-sala");
+    b.style.display = "block";
+    b.innerHTML = `Compartí este código:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
+    $("btn-nueva").style.display = "flex";
   }
 }
 
-function enviar(tipo, datos = {}) {
-  if (!canal) return;
-  canal.publish(tipo, { from: miNombre, ...datos });
+// ── ABLY ──────────────────────────────────────────────────
+function conectarAbly() {
+  setConn("amarillo","Conectando...");
+  const ably = new Ably.Realtime({ key: ABLY_KEY });
+  canal = ably.channels.get("tutti-" + sala);
+  ably.connection.on("connected", () => {
+    setConn("verde","Conectado");
+    canal.subscribe(onMensaje);
+    enviar("hola", { nombre: miNombre });
+  });
+  ably.connection.on("disconnected", () => setConn("amarillo","Reconectando..."));
+  ably.connection.on("failed",       () => setConn("rojo","Sin conexión"));
 }
 
-function procesarMensaje(msg) {
-  const tipo = msg.name;
-  const data = msg.data;
-  if (data.from === miNombre) return;
+function enviar(tipo, datos={}) {
+  canal?.publish(tipo, { from: miNombre, ...datos });
+}
+
+// ── MENSAJES ──────────────────────────────────────────────
+function onMensaje(msg) {
+  const tipo = msg.name, d = msg.data;
+  if (d.from === miNombre) return;
 
   if (tipo === "hola" || tipo === "hola-back") {
-    const nombre = data.nombre || data.from;
-    if (!jugadores[nombre]) {
-      jugadores[nombre] = { nombre, listo: true, entregado: false };
-      puntajesAcum[nombre] = 0;
+    const n = d.nombre || d.from;
+    if (!jugadores[n]) {
+      jugadores[n] = { nombre: n, listo: true, entregado: false };
+      puntajesAcum[n] = 0;
+      msgSistema(`${n} se unió a la sala 👋`);
     }
     renderJugadores();
     if (tipo === "hola") enviar("hola-back", { nombre: miNombre });
   }
 
   if (tipo === "nueva-ronda") {
-    empezarRonda(data.letra);
+    msgSistema(`▶ Nueva ronda — letra ${d.letra}`);
+    empezarRonda(d.letra);
   }
 
   if (tipo === "stop") {
     if (!bloqueado) {
-      bloqueado = true;
-      juegoActivo = false;
-      bloquearInputs();
-      const misResp = leerMisRespuestas();
-      respuestasRonda[miNombre] = misResp;
+      bloqueado = true; juegoActivo = false;
+      bloquearForm();
+      const mis = leerRespuestas();
+      respuestasRonda[miNombre] = mis;
       jugadores[miNombre].entregado = true;
-      enviar("respuestas", { respuestas: misResp });
-      mostrarStopBanner("🛑 " + data.from + " cantó STOP");
+      enviar("respuestas", { respuestas: mis });
+      mostrarStop(`🛑 ${d.from} cantó STOP`);
+      msgSistema(`🛑 ${d.from} cantó STOP`);
       renderJugadores();
       verificarResultados();
     }
   }
 
   if (tipo === "respuestas") {
-    respuestasRonda[data.from] = data.respuestas;
-    if (jugadores[data.from]) jugadores[data.from].entregado = true;
+    respuestasRonda[d.from] = d.respuestas;
+    if (jugadores[d.from]) jugadores[d.from].entregado = true;
     renderJugadores();
     verificarResultados();
   }
+
+  if (tipo === "pts-update") {
+    // El anfitrión mandó puntos corregidos
+    if (d.puntajesAcum) {
+      Object.assign(puntajesAcum, d.puntajesAcum);
+      actualizarFilaAcum();
+    }
+  }
+
+  if (tipo === "chat") {
+    agregarChat(d.from, d.texto, d.hora, false);
+  }
 }
 
+// ── JUEGO ─────────────────────────────────────────────────
 function nuevaRonda() {
-  const cantJ = Object.keys(jugadores).length;
-  if (cantJ < 2) { alert("Esperá que se una al menos otra persona"); return; }
-  const letra = LETRAS[Math.floor(Math.random() * LETRAS.length)];
+  if (Object.keys(jugadores).length < 2) { alert("Esperá que se una al menos una persona más"); return; }
+  const letra = LETRAS[Math.floor(Math.random()*LETRAS.length)];
   enviar("nueva-ronda", { letra });
   empezarRonda(letra);
 }
 
 function empezarRonda(letra) {
-  juegoActivo = true;
-  bloqueado = false;
+  juegoActivo = true; bloqueado = false;
   respuestasRonda = {};
   Object.keys(jugadores).forEach(n => jugadores[n].entregado = false);
 
-  document.getElementById("letra").textContent = letra;
-  document.getElementById("letra-hint").textContent = "Escribí tus respuestas con " + letra;
-  document.getElementById("btn-stop").disabled = false;
-  document.getElementById("btn-nueva").style.display = "none";
-  document.getElementById("card-resultados").style.display = "none";
-  document.getElementById("stop-banner").style.display = "none";
-  document.getElementById("info-sala").style.display = "none";
+  $("letra").textContent = letra;
+  $("letra-titulo").textContent = "Ronda en curso";
+  $("letra-sub").textContent = `Escribí con la letra ${letra}`;
+  $("btn-stop").disabled = false;
+  $("btn-nueva").style.display = "none";
+  $("stop-banner").style.display = "none";
+  $("card-resultados").style.display = "none";
+  $("card-form").style.display = "block";
+  $("info-sala").style.display = "none";
+  $("lbl-editar").style.display = "none";
 
   document.querySelectorAll(".cat-input").forEach(inp => {
-    inp.value = "";
-    inp.disabled = false;
-    inp.className = "cat-input";
-    inp.placeholder = "Con " + letra + "...";
+    inp.value = ""; inp.disabled = false; inp.className = "cat-input";
+    inp.placeholder = `Con ${letra}...`;
   });
   renderJugadores();
   document.querySelector(".cat-input")?.focus();
@@ -302,151 +720,186 @@ function empezarRonda(letra) {
 
 function cantarStop() {
   if (!juegoActivo || bloqueado) return;
-  bloqueado = true;
-  juegoActivo = false;
-  bloquearInputs();
-  const misResp = leerMisRespuestas();
-  respuestasRonda[miNombre] = misResp;
+  bloqueado = true; juegoActivo = false;
+  bloquearForm();
+  const mis = leerRespuestas();
+  respuestasRonda[miNombre] = mis;
   jugadores[miNombre].entregado = true;
   enviar("stop");
-  enviar("respuestas", { respuestas: misResp });
-  mostrarStopBanner("🛑 ¡Cantaste STOP!");
+  enviar("respuestas", { respuestas: mis });
+  mostrarStop("🛑 ¡Cantaste STOP!");
+  msgSistema("🛑 ¡Cantaste STOP!");
   renderJugadores();
   verificarResultados();
 }
 
-function bloquearInputs() {
-  document.getElementById("btn-stop").disabled = true;
-  document.querySelectorAll(".cat-input").forEach(inp => inp.disabled = true);
+function bloquearForm() {
+  $("btn-stop").disabled = true;
+  document.querySelectorAll(".cat-input").forEach(i => i.disabled = true);
 }
 
-function leerMisRespuestas() {
-  return CATEGORIAS.map((_, i) => {
-    const inp = document.getElementById("cat-" + i);
-    return inp ? inp.value.trim() : "";
-  });
+function leerRespuestas() {
+  return CATEGORIAS.map((_,i) => ($("cat-"+i)?.value.trim() || ""));
 }
 
-function mostrarStopBanner(msg) {
-  const b = document.getElementById("stop-banner");
-  b.textContent = msg;
-  b.style.display = "block";
+function mostrarStop(msg) {
+  $("stop-banner").textContent = msg;
+  $("stop-banner").style.display = "block";
 }
 
 function verificarResultados() {
-  const totalJugadores = Object.keys(jugadores).length;
-  const entregados = Object.keys(respuestasRonda).length;
-
-  document.getElementById("card-resultados").style.display = "block";
-
-  if (entregados < totalJugadores) {
-    const faltaN = totalJugadores - entregados;
-    document.getElementById("esperando-otros").style.display = "block";
-    document.getElementById("esperando-otros").textContent =
-      `Esperando respuestas de ${faltaN} jugador${faltaN > 1 ? "es" : ""}...`;
+  const total = Object.keys(jugadores).length;
+  const listos = Object.keys(respuestasRonda).length;
+  if (listos < total) {
+    $("letra-sub").textContent = `Esperando ${total-listos} jugador${total-listos>1?"es":""}...`;
     return;
   }
-
-  document.getElementById("esperando-otros").style.display = "none";
-  renderResultadosCompletos();
+  mostrarResultados();
 }
 
-function renderResultadosCompletos() {
+function calcularPuntos(letra) {
   const nombres = Object.keys(jugadores);
+  puntajesRonda = {};
+  nombres.forEach(n => puntajesRonda[n] = 0);
 
-  // Para cada categoría y jugador, detectar repetidas
-  // Una respuesta es "repetida" si otro jugador puso lo mismo (normalizado)
-  const esRepetida = CATEGORIAS.map((_, i) => {
-    const vals = nombres.map(n => normalizar((respuestasRonda[n] || [])[i]));
-    return nombres.map((_, j) => {
-      if (!vals[j]) return false;
-      return vals.filter(v => v === vals[j]).length > 1;
-    });
-  });
+  CATEGORIAS.forEach((_,i) => {
+    const vals = nombres.map(n => normalizar((respuestasRonda[n]||[])[i]));
 
-  // Calcular puntos de esta ronda por jugador
-  const ptsRonda = {};
-  nombres.forEach((n, j) => {
-    let pts = 0;
-    CATEGORIAS.forEach((_, i) => {
-      const r = ((respuestasRonda[n] || [])[i] || "").trim();
-      if (r && !esRepetida[i][j]) pts++;
-    });
-    ptsRonda[n] = pts;
-    puntajesAcum[n] = (puntajesAcum[n] || 0) + pts;
-  });
+    nombres.forEach((n,j) => {
+      const r = ((respuestasRonda[n]||[])[i]||"").trim();
+      const norm = vals[j];
 
-  // Colorear inputs propios
-  CATEGORIAS.forEach((_, i) => {
-    const inp = document.getElementById("cat-" + i);
-    if (!inp) return;
-    const miIdx = nombres.indexOf(miNombre);
-    const r = ((respuestasRonda[miNombre] || [])[i] || "").trim();
-    if (!r) return;
-    inp.className = "cat-input " + (esRepetida[i][miIdx] ? "repetida" : "ok");
-  });
+      if (!r) { /* 0 */ return; }
 
-  // Construir tabla
-  let cols = `<th style="width:110px">Categoría</th>`;
-  nombres.forEach(n => {
-    cols += `<th>${n}${n === miNombre ? " (vos)" : ""}</th>`;
-  });
+      // Verificar que empiece con la letra correcta
+      if (!norm.startsWith(normalizar(letra))) {
+        puntajesRonda[n] -= 1; // inválida
+        return;
+      }
 
-  let filas = "";
-  CATEGORIAS.forEach((cat, i) => {
-    let fila = `<td class="cat">${cat}</td>`;
-    nombres.forEach((n, j) => {
-      const r = ((respuestasRonda[n] || [])[i] || "").trim();
-      const rep = esRepetida[i][j];
-      if (r) {
-        fila += `<td><span class="badge ${rep ? "badge-repetida" : "badge-ok"}">${r}${rep ? " ★" : ""}</span></td>`;
+      // Contar cuántos pusieron lo mismo
+      const iguales = vals.filter(v => v === norm && v !== "").length;
+      if (iguales === 1) {
+        puntajesRonda[n] += 10; // original
       } else {
-        fila += `<td><span class="badge badge-vacia">—</span></td>`;
+        puntajesRonda[n] += 5;  // repetida
       }
     });
-    filas += `<tr>${fila}</tr>`;
   });
 
-  // Fila de puntos de la ronda
-  let filaPts = `<td class="cat">Esta ronda</td>`;
-  nombres.forEach(n => { filaPts += `<td><strong>${ptsRonda[n]} pts</strong></td>`; });
+  return puntajesRonda;
+}
+
+function mostrarResultados() {
+  const letra = $("letra").textContent;
+  const nombres = Object.keys(jugadores);
+  calcularPuntos(letra);
+
+  // Sumar al acumulado
+  nombres.forEach(n => {
+    puntajesAcum[n] = (puntajesAcum[n]||0) + (puntajesRonda[n]||0);
+  });
+
+  // Ocultar form, mostrar resultados
+  $("card-form").style.display = "none";
+  $("card-resultados").style.display = "block";
+  if (soyCreador) $("lbl-editar").style.display = "block";
+
+  $("letra-titulo").textContent = "Ronda terminada";
+  $("letra-sub").textContent = "";
+
+  // Construir tabla
+  let thead = `<th style="width:110px">Categoría</th>`;
+  nombres.forEach(n => {
+    thead += `<th>${n}${n===miNombre?" <span style='font-size:10px;color:var(--text-3)'>(vos)</span>":""}</th>`;
+  });
+
+  let tbody = "";
+  CATEGORIAS.forEach((cat,i) => {
+    const norm = letra ? normalizar(letra) : "";
+    const vals = nombres.map(n => normalizar((respuestasRonda[n]||[])[i]));
+    let row = `<td class="cat">${cat}</td>`;
+    nombres.forEach((n,j) => {
+      const r = ((respuestasRonda[n]||[])[i]||"").trim();
+      const v = vals[j];
+      if (!r) {
+        row += `<td><span class="rbadge vacia">—</span></td>`;
+      } else if (!v.startsWith(norm)) {
+        row += `<td><span class="rbadge inv">❌ ${r}</span></td>`;
+      } else {
+        const iguales = vals.filter(x => x===v && x!=="").length;
+        if (iguales===1) {
+          row += `<td><span class="rbadge ok">✅ ${r}</span></td>`;
+        } else {
+          row += `<td><span class="rbadge rep">🔄 ${r}</span></td>`;
+        }
+      }
+    });
+    tbody += `<tr>${row}</tr>`;
+  });
+
+  // Fila puntos ronda (editables por anfitrión)
+  let filaPts = `<td class="cat" style="font-weight:600">Esta ronda</td>`;
+  nombres.forEach(n => {
+    if (soyCreador) {
+      filaPts += `<td><div class="pts-cell">
+        <input class="pts-input" id="pts-${n}" type="number" value="${puntajesRonda[n]}"
+          onchange="recalcAcum('${n}')" />
+        <span style="font-size:11px;color:var(--text-3)">pts</span>
+      </div></td>`;
+    } else {
+      filaPts += `<td><div class="pts-cell"><input class="pts-input" id="pts-${n}" type="number" value="${puntajesRonda[n]}" disabled /><span style="font-size:11px;color:var(--text-3)">pts</span></div></td>`;
+    }
+  });
 
   // Fila acumulado
-  let filaAcum = `<td class="cat">Total</td>`;
-  nombres.forEach(n => { filaAcum += `<td>${puntajesAcum[n]} pts</td>`; });
+  let filaAcum = `<td class="cat">Total acumulado</td>`;
+  nombres.forEach(n => {
+    filaAcum += `<td id="acum-${n}" style="font-weight:700;">${puntajesAcum[n]} pts</td>`;
+  });
 
-  document.getElementById("tabla-resultados").innerHTML = `
-    <table class="resultados-tabla">
-      <thead><tr>${cols}</tr></thead>
-      <tbody>
-        ${filas}
+  $("tabla-resultados").innerHTML = `
+    <table class="rtable">
+      <thead><tr>${thead}</tr></thead>
+      <tbody>${tbody}
         <tr class="fila-total">${filaPts}</tr>
         <tr class="fila-acum">${filaAcum}</tr>
       </tbody>
-    </table>
-    <div style="font-size:12px;color:#aaa;margin-top:10px;">★ Respuesta repetida — no suma puntos</div>
-  `;
+    </table>`;
 
-  if (soyCreador) mostrarBtnNueva();
-  else {
-    document.getElementById("letra-hint").textContent = "Esperá que el creador de la sala inicie la siguiente ronda";
+  if (soyCreador) {
+    setTimeout(() => $("btn-nueva").style.display = "flex", 400);
+  } else {
+    $("letra-sub").textContent = "Esperá que el anfitrión inicie la siguiente ronda";
   }
 }
 
-function renderJugadores() {
-  const grid = document.getElementById("players-grid");
-  grid.innerHTML = Object.values(jugadores).map(j => {
-    let cls = "chip";
-    if (j.nombre === miNombre) cls += " yo";
-    else if (j.entregado) cls += " entregado";
-    else if (j.listo) cls += " listo";
-    const icono = j.entregado ? " ✓" : "";
-    return `<div class="${cls}">${j.nombre}${j.nombre === miNombre ? " (vos)" : ""}${icono}</div>`;
-  }).join("");
+function recalcAcum(nombre) {
+  // Recalcular acumulado cuando el anfitrión edita puntos
+  const nombres = Object.keys(jugadores);
+  nombres.forEach(n => {
+    const inp = $("pts-"+n);
+    if (!inp) return;
+    const nuevoPts = parseInt(inp.value)||0;
+    const diff = nuevoPts - (puntajesRonda[n]||0);
+    puntajesAcum[n] = (puntajesAcum[n]||0) + diff;
+    puntajesRonda[n] = nuevoPts;
+  });
+  actualizarFilaAcum();
+  // Sincronizar con los demás
+  enviar("pts-update", { puntajesAcum });
 }
 
+function actualizarFilaAcum() {
+  Object.keys(jugadores).forEach(n => {
+    const el = $("acum-"+n);
+    if (el) el.textContent = (puntajesAcum[n]||0) + " pts";
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────
 function renderCategorias() {
-  document.getElementById("categorias").innerHTML = CATEGORIAS.map((cat, i) =>
+  $("cat-grid").innerHTML = CATEGORIAS.map((cat,i) =>
     `<div class="cat-row">
       <span class="cat-label">${cat}</span>
       <input class="cat-input" id="cat-${i}" disabled placeholder="..." />
@@ -454,15 +907,75 @@ function renderCategorias() {
   ).join("");
 }
 
-function setConn(color, txt) {
-  document.getElementById("dot").className = "dot " + color;
-  document.getElementById("estado-conn").textContent = txt;
+function renderJugadores() {
+  $("players-row").innerHTML = Object.values(jugadores).map(j => {
+    let cls = "chip";
+    if (j.nombre === miNombre) cls += " yo";
+    else if (j.entregado) cls += " entregado";
+    else if (j.listo) cls += " listo";
+    return `<div class="${cls}">${j.nombre}${j.nombre===miNombre?" (vos)":""}${j.entregado?" ✓":""}</div>`;
+  }).join("");
 }
 
-function mostrarBtnNueva() {
-  setTimeout(() => {
-    document.getElementById("btn-nueva").style.display = "block";
-  }, 500);
+function setConn(color, txt) {
+  $("dot").className = "dot "+color;
+  $("estado-conn").textContent = txt;
+}
+
+// ── CHAT ──────────────────────────────────────────────────
+function enviarChat(origen) {
+  const inp = $("chat-inp-"+origen);
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const hora = ahora();
+  enviar("chat", { texto: txt, hora });
+  agregarChat(miNombre, txt, hora, true);
+  inp.value = "";
+}
+
+function agregarChat(autor, texto, hora, propio) {
+  const html = `<div class="chat-msg ${propio?"propio":"otro"}">
+    <span class="autor">${autor}</span>${texto}<span class="hora">${hora}</span>
+  </div>`;
+
+  // Desktop
+  const dm = $("chat-msgs-desktop");
+  dm.insertAdjacentHTML("beforeend", html);
+  dm.scrollTop = dm.scrollHeight;
+
+  // Mobile
+  const mm = $("chat-msgs-mobile");
+  mm.insertAdjacentHTML("beforeend", html);
+  mm.scrollTop = mm.scrollHeight;
+
+  // Badge mobile si popup cerrado y no es propio
+  if (!propio && !chatAbierto) {
+    noLeidos++;
+    $("fab-badge").style.display = "block";
+    $("fab-badge").textContent = noLeidos;
+  }
+}
+
+function msgSistema(txt) {
+  const html = `<div class="chat-msg sistema">${txt}</div>`;
+  const dm = $("chat-msgs-desktop");
+  dm.insertAdjacentHTML("beforeend", html);
+  dm.scrollTop = dm.scrollHeight;
+  const mm = $("chat-msgs-mobile");
+  mm.insertAdjacentHTML("beforeend", html);
+  mm.scrollTop = mm.scrollHeight;
+}
+
+function toggleChatMobile() {
+  chatAbierto = !chatAbierto;
+  $("chat-popup").classList.toggle("open", chatAbierto);
+  if (chatAbierto) {
+    noLeidos = 0;
+    $("fab-badge").style.display = "none";
+    const mm = $("chat-msgs-mobile");
+    mm.scrollTop = mm.scrollHeight;
+    $("chat-inp-mobile").focus();
+  }
 }
 </script>
 </body>
