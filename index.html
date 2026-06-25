@@ -320,16 +320,27 @@ function mostrarResultadosParciales() {
   document.getElementById("tabla-resultados").innerHTML = "";
 }
 
+function normalizar(str) {
+  return (str || "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")  // saca acentos
+    .replace(/[^a-z0-9\s]/g, "")      // saca caracteres especiales
+    .replace(/\s+/g, " ")             // colapsa espacios múltiples
+    .trim();
+}
+
 function renderResultadosCompletos() {
   document.getElementById("esperando-rival").style.display = "none";
 
   const resp1 = misRespuestas;
   const resp2 = respuestasOtro || [];
 
-  // Detectar repetidas (misma respuesta no vacía en ambos)
+  // Detectar repetidas (misma respuesta no vacía en ambos, comparando normalizado)
   const repetidas = CATEGORIAS.map((_, i) => {
-    const r1 = (resp1[i] || "").toLowerCase().trim();
-    const r2 = (resp2[i] || "").toLowerCase().trim();
+    const r1 = normalizar(resp1[i]);
+    const r2 = normalizar(resp2[i]);
     return r1 && r2 && r1 === r2;
   });
 
