@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; background: #f5f4f0; min-height: 100vh; color: #1a1a1a; }
-  .page { padding: 1.5rem; max-width: 480px; margin: 0 auto; }
+  .page { padding: 1.5rem; max-width: 520px; margin: 0 auto; }
   h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
   .sub { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
   .card { background: white; border: 1px solid #e5e5e5; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; }
@@ -43,14 +43,29 @@
   .cat-label { font-size: 13px; color: #666; width: 130px; flex-shrink: 0; }
   .cat-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 9px 11px; font-size: 15px; font-family: inherit; background: #fafafa; outline: none; transition: border-color 0.15s; }
   .cat-input:focus { border-color: #888; background: white; }
-  .cat-input:disabled { opacity: 0.45; cursor: not-allowed; }
+  .cat-input:disabled { opacity: 0.55; cursor: not-allowed; }
   .cat-input.ok { border-color: #22c55e; background: #f0fdf4; }
+  .cat-input.repetida { border-color: #f59e0b; background: #fffbeb; }
   .stop-banner { background: #ef4444; color: white; text-align: center; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 16px; margin-bottom: 12px; display: none; }
   .info-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #92400e; margin-bottom: 1rem; line-height: 1.6; }
   .sala-grande { font-size: 26px; font-weight: 700; letter-spacing: 5px; }
-  .puntaje-fila { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-  .puntaje-fila:last-child { border-bottom: none; }
   #setup, #game { display: none; }
+
+  /* Tabla de resultados */
+  .resultados-titulo { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .resultados-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .resultados-tabla th { text-align: left; padding: 6px 8px; color: #666; font-weight: 500; border-bottom: 2px solid #f0f0f0; }
+  .resultados-tabla th.col-resp { text-align: left; }
+  .resultados-tabla td { padding: 7px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }
+  .resultados-tabla td.cat { color: #666; font-size: 12px; }
+  .resultados-tabla tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .badge-ok { background: #f0fdf4; color: #15803d; }
+  .badge-vacia { background: #f5f5f5; color: #aaa; }
+  .badge-repetida { background: #fffbeb; color: #92400e; }
+  .puntaje-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 0; margin-top: 8px; border-top: 2px solid #f0f0f0; font-weight: 600; font-size: 15px; }
+  .puntaje-acum { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 0; font-size: 13px; color: #666; }
+  .esperando-resp { font-size: 13px; color: #888; text-align: center; padding: 12px 0; }
 </style>
 </head>
 <body>
@@ -102,9 +117,10 @@
   <button class="btn btn-stop" id="btn-stop" onclick="cantarStop()" disabled>¡ S T O P !</button>
   <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;margin-top:10px;">▶ Nueva ronda</button>
 
-  <div class="card" id="card-puntajes" style="display:none;margin-top:1rem;">
-    <div style="font-size:14px;font-weight:600;margin-bottom:10px;">Puntajes</div>
-    <div id="tabla-puntajes"></div>
+  <div class="card" id="card-resultados" style="display:none;margin-top:1rem;">
+    <div class="resultados-titulo">Resultados de la ronda</div>
+    <div id="tabla-resultados"></div>
+    <div id="esperando-rival" class="esperando-resp" style="display:none;">Esperando las respuestas de tu rival...</div>
   </div>
 </div>
 
@@ -120,8 +136,14 @@ let otroNombre = "";
 let soyCreador = false;
 let juegoActivo = false;
 let bloqueado = false;
-let puntajes = {};
 let canal = null;
+
+// Puntajes acumulados entre rondas
+let puntajesAcum = {};
+
+// Respuestas de esta ronda
+let misRespuestas = [];
+let respuestasOtro = null;
 
 function genCodigo() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -153,7 +175,7 @@ function unirse() {
 }
 
 function arrancar() {
-  puntajes[miNombre] = 0;
+  puntajesAcum[miNombre] = 0;
   document.getElementById("setup").style.display = "none";
   document.getElementById("game").style.display = "block";
   document.getElementById("chip-yo").textContent = miNombre + " (vos)";
@@ -180,7 +202,6 @@ function conectarAbly() {
 
     ably.connection.on("disconnected", () => setConn("amarillo", "Reconectando..."));
     ably.connection.on("failed", () => setConn("rojo", "Error de conexión"));
-
   } catch(e) {
     setConn("rojo", "Error al conectar");
   }
@@ -198,7 +219,7 @@ function procesarMensaje(msg) {
 
   if (tipo === "hola" || tipo === "hola-back") {
     otroNombre = data.nombre || data.from;
-    if (!puntajes[otroNombre]) puntajes[otroNombre] = 0;
+    if (!puntajesAcum[otroNombre]) puntajesAcum[otroNombre] = 0;
     document.getElementById("chip-otro").textContent = otroNombre;
     document.getElementById("chip-otro").className = "chip listo";
     if (tipo === "hola") enviar("hola-back", { nombre: miNombre });
@@ -213,8 +234,20 @@ function procesarMensaje(msg) {
     if (!bloqueado) {
       bloqueado = true;
       juegoActivo = false;
-      activarStop("🛑 " + data.from + " cantó STOP");
+      // Bloquear y mandar mis respuestas
+      bloquearInputs();
+      misRespuestas = leerMisRespuestas();
+      enviar("respuestas", { respuestas: misRespuestas });
+      mostrarStopBanner("🛑 " + data.from + " cantó STOP");
+      // Mostrar resultados parciales mientras llegan las del otro
+      respuestasOtro = null;
+      mostrarResultadosParciales();
     }
+  }
+
+  if (tipo === "respuestas") {
+    respuestasOtro = data.respuestas;
+    renderResultadosCompletos();
   }
 }
 
@@ -228,11 +261,13 @@ function nuevaRonda() {
 function empezarRonda(letra) {
   juegoActivo = true;
   bloqueado = false;
+  misRespuestas = [];
+  respuestasOtro = null;
   document.getElementById("letra").textContent = letra;
   document.getElementById("letra-hint").textContent = "Escribí tus respuestas con " + letra;
   document.getElementById("btn-stop").disabled = false;
   document.getElementById("btn-nueva").style.display = "none";
-  document.getElementById("card-puntajes").style.display = "none";
+  document.getElementById("card-resultados").style.display = "none";
   document.getElementById("stop-banner").style.display = "none";
   document.querySelectorAll(".cat-input").forEach(inp => {
     inp.value = "";
@@ -247,38 +282,125 @@ function cantarStop() {
   if (!juegoActivo || bloqueado) return;
   bloqueado = true;
   juegoActivo = false;
+
+  // Bloquear inputs y recolectar respuestas
+  bloquearInputs();
+  misRespuestas = leerMisRespuestas();
+
+  // Avisar al otro que cantamos stop y mandar nuestras respuestas
   enviar("stop");
-  activarStop("🛑 ¡Cantaste STOP!");
+  enviar("respuestas", { respuestas: misRespuestas });
+
+  mostrarStopBanner("🛑 ¡Cantaste STOP!");
+  respuestasOtro = null;
+  mostrarResultadosParciales();
 }
 
-function activarStop(msg) {
+function bloquearInputs() {
   document.getElementById("btn-stop").disabled = true;
-  document.querySelectorAll(".cat-input").forEach(inp => {
-    inp.disabled = true;
-    if (inp.value.trim()) inp.classList.add("ok");
+  document.querySelectorAll(".cat-input").forEach(inp => inp.disabled = true);
+}
+
+function leerMisRespuestas() {
+  return CATEGORIAS.map((cat, i) => {
+    const inp = document.getElementById("cat-" + i);
+    return inp ? inp.value.trim() : "";
   });
-  document.getElementById("stop-banner").textContent = msg;
-  document.getElementById("stop-banner").style.display = "block";
-  sumarPuntos();
+}
+
+function mostrarStopBanner(msg) {
+  const banner = document.getElementById("stop-banner");
+  banner.textContent = msg;
+  banner.style.display = "block";
+}
+
+function mostrarResultadosParciales() {
+  document.getElementById("card-resultados").style.display = "block";
+  document.getElementById("esperando-rival").style.display = "block";
+  document.getElementById("tabla-resultados").innerHTML = "";
+}
+
+function renderResultadosCompletos() {
+  document.getElementById("esperando-rival").style.display = "none";
+
+  const resp1 = misRespuestas;
+  const resp2 = respuestasOtro || [];
+
+  // Detectar repetidas (misma respuesta no vacía en ambos)
+  const repetidas = CATEGORIAS.map((_, i) => {
+    const r1 = (resp1[i] || "").toLowerCase().trim();
+    const r2 = (resp2[i] || "").toLowerCase().trim();
+    return r1 && r2 && r1 === r2;
+  });
+
+  // Calcular puntos de esta ronda
+  let ptsYo = 0, ptsOtro = 0;
+  CATEGORIAS.forEach((_, i) => {
+    const r1 = (resp1[i] || "").trim();
+    const r2 = (resp2[i] || "").trim();
+    if (r1 && !repetidas[i]) ptsYo++;
+    if (r2 && !repetidas[i]) ptsOtro++;
+  });
+
+  puntajesAcum[miNombre] = (puntajesAcum[miNombre] || 0) + ptsYo;
+  puntajesAcum[otroNombre] = (puntajesAcum[otroNombre] || 0) + ptsOtro;
+
+  // Colorear inputs propios
+  CATEGORIAS.forEach((_, i) => {
+    const inp = document.getElementById("cat-" + i);
+    if (!inp) return;
+    const r = (resp1[i] || "").trim();
+    if (!r) return;
+    inp.className = "cat-input " + (repetidas[i] ? "repetida" : "ok");
+  });
+
+  // Renderizar tabla
+  let html = `<table class="resultados-tabla">
+    <thead>
+      <tr>
+        <th style="width:110px">Categoría</th>
+        <th class="col-resp">${miNombre}</th>
+        <th class="col-resp">${otroNombre}</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  CATEGORIAS.forEach((cat, i) => {
+    const r1 = (resp1[i] || "").trim();
+    const r2 = (resp2[i] || "").trim();
+    const rep = repetidas[i];
+
+    const badge1 = r1
+      ? `<span class="badge ${rep ? 'badge-repetida' : 'badge-ok'}">${r1}${rep ? ' ★' : ''}</span>`
+      : `<span class="badge badge-vacia">—</span>`;
+    const badge2 = r2
+      ? `<span class="badge ${rep ? 'badge-repetida' : 'badge-ok'}">${r2}${rep ? ' ★' : ''}</span>`
+      : `<span class="badge badge-vacia">—</span>`;
+
+    html += `<tr>
+      <td class="cat">${cat}</td>
+      <td>${badge1}</td>
+      <td>${badge2}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>
+    <div class="puntaje-total">
+      <span>Esta ronda</span>
+      <span>${miNombre} ${ptsYo} pts &nbsp;·&nbsp; ${otroNombre} ${ptsOtro} pts</span>
+    </div>
+    <div class="puntaje-acum">
+      <span>Total acumulado</span>
+      <span>${miNombre} ${puntajesAcum[miNombre]} &nbsp;·&nbsp; ${otroNombre} ${puntajesAcum[otroNombre]}</span>
+    </div>
+    <div style="font-size:12px;color:#aaa;margin-top:8px;">★ Respuesta repetida — no suma puntos</div>`;
+
+  document.getElementById("tabla-resultados").innerHTML = html;
+
   if (soyCreador) mostrarBtnNueva();
   else {
     document.getElementById("letra-hint").textContent = "Esperá que la otra jugadora inicie la siguiente ronda";
   }
-}
-
-function sumarPuntos() {
-  let pts = 0;
-  document.querySelectorAll(".cat-input").forEach(inp => { if (inp.value.trim()) pts++; });
-  puntajes[miNombre] = (puntajes[miNombre] || 0) + pts;
-  renderPuntajes();
-}
-
-function renderPuntajes() {
-  document.getElementById("card-puntajes").style.display = "block";
-  document.getElementById("tabla-puntajes").innerHTML = Object.entries(puntajes)
-    .sort((a,b) => b[1]-a[1])
-    .map(([n,p]) => `<div class="puntaje-fila"><span>${n}</span><span><strong>${p}</strong> pts</span></div>`)
-    .join("");
 }
 
 function renderCategorias() {
@@ -298,7 +420,7 @@ function setConn(color, txt) {
 function mostrarBtnNueva() {
   setTimeout(() => {
     document.getElementById("btn-nueva").style.display = "block";
-  }, 800);
+  }, 500);
 }
 </script>
 </body>
