@@ -68,7 +68,9 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
   border-bottom:1px solid var(--border);
   font-size:12px;
   color:var(--text-2);
-  overflow:hidden;
+  overflow:visible;
+  position:relative;
+  z-index:300;
 }
 .topbar-brand { font-weight:700; font-size:13px; color:var(--text); flex-shrink:0; margin-right:14px; }
 .topbar-sep { width:1px; height:20px; background:var(--border); flex-shrink:0; margin:0 10px; }
@@ -126,7 +128,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 .btn-icon:hover { border-color:var(--border-strong); color:var(--text); }
 .btn-salir { background:none; border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer; color:var(--text-2); transition:all .15s; }
 .btn-salir:hover { border-color:var(--accent); color:var(--accent); }
-.config-dropdown { display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 4px 20px rgba(0,0,0,0.13); z-index:200; min-width:260px; padding:6px; }
+.config-dropdown { display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 4px 20px rgba(0,0,0,0.13); z-index:400; min-width:260px; padding:6px; }
 .config-dropdown.open { display:block; }
 .cfg-title { font-size:11px; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; padding:6px 8px 4px; }
 .cfg-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; color:var(--text); transition:background .1s; }
@@ -308,7 +310,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0.2</p>
+    <p class="setup-sub">v2.0.3</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
