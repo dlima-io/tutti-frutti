@@ -209,6 +209,14 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 .info-box .sala-code { font-size:24px; font-weight:800; letter-spacing:5px; display:block; margin-top:4px; }
 .legend { font-size:11px; color:var(--text-3); margin-top:8px; }
 
+/* ── LISTO / CONTADOR ── */
+.btn-listo { background:var(--green); color:white; font-size:15px; font-weight:600; padding:14px; border-radius:var(--radius); width:100%; border:none; cursor:pointer; transition:all .15s; }
+.btn-listo:active { transform:scale(.97); }
+.btn-listo:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.contador-wrap { display:none; align-items:center; gap:10px; padding:10px 14px; background:var(--amber-dim); border:1px solid #f0d080; border-radius:var(--radius-sm); font-size:13px; color:#7a5a00; }
+.contador-num { font-size:22px; font-weight:800; color:var(--accent); min-width:32px; text-align:center; }
+.listos-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+
 /* ── CHAT DESKTOP ── */
 .chat-header-d { padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600; font-size:13px; color:var(--text-2); }
 .chat-msgs { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:6px; }
@@ -310,7 +318,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0.4</p>
+    <p class="setup-sub">v2.0.5</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -449,6 +457,14 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
       <div style="display:flex;gap:8px;">
         <button class="btn-stop" id="btn-stop" onclick="cantarStop()" disabled>S T O P</button>
         <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;white-space:nowrap;">▶ Nueva ronda</button>
+        <button class="btn-listo" id="btn-listo" onclick="decirListo()" style="display:none;">✋ Estoy listo</button>
+      </div>
+      <div class="contador-wrap" id="contador-wrap">
+        <div class="contador-num" id="contador-num">50</div>
+        <div>
+          <div>El anfitrión tiene <strong id="contador-anfitrion">—</strong> para iniciar la ronda</div>
+          <div class="listos-chips" id="listos-chips"></div>
+        </div>
       </div>
 
     </div><!-- /col-juego -->
@@ -515,6 +531,9 @@ let chatAbierto=false, noLeidos=0;
 let timeoutEspera=null, faseActual="esperando", letraActualRonda="";
 let turnoAnfitrion=0;
 let modoSeleccionado="tradicional";
+let listosParaRonda={};      // { nombre: true }
+let timeoutAnfitrion=null;   // timer de 50s para cambiar anfitrión
+let intervaloContador=null;  // intervalo del contador visual
 
 const $=id=>document.getElementById(id);
 function genCodigo(){return Math.random().toString(36).substring(2,8).toUpperCase();}
@@ -701,6 +720,30 @@ function onMensaje(msg){
     if(d.puntajesAcum){Object.assign(puntajesAcum,d.puntajesAcum);actualizarFilaAcum();}
   }
 
+  if(tipo==="listo"){
+    listosParaRonda[d.from]=true;
+    renderListos();
+    // El primero en avisar arranca el contador
+    if(Object.keys(listosParaRonda).length===1) arrancarContadorAnfitrion();
+  }
+
+  if(tipo==="transferir-anfitrion"){
+    // El timeout expiró, el anfitrión anterior fue removido del turno
+    if(typeof d.nuevoTurno==="number"){
+      turnoAnfitrion=d.nuevoTurno;
+      renderJugadores();
+      if(soyAnfitrionAhora()){
+        msgSistema("👑 ¡Te toca a vos! El anfitrión anterior no inició la ronda a tiempo");
+        mostrarBtnNueva();
+        $("btn-listo").style.display="none";
+        $("btn-config").style.display="flex";
+        $("mm-btn-config").style.display="flex";
+      } else {
+        msgSistema(`👑 ${anfitrionActual()} es el nuevo anfitrión — no inició la ronda a tiempo`);
+      }
+    }
+  }
+
   if(tipo==="cats-update"){
     CATEGORIAS=d.categorias;
     renderCategorias();
@@ -713,6 +756,7 @@ function onMensaje(msg){
 // ── JUEGO ──
 function nuevaRonda(){
   if(Object.keys(jugadores).length<2){alert("Esperá que se una al menos una persona más");return;}
+  limpiarContadorAnfitrion();
   const letra=LETRAS[Math.floor(Math.random()*LETRAS.length)];
   enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:turnoAnfitrion});
   empezarRonda(letra);
@@ -720,15 +764,18 @@ function nuevaRonda(){
 
 function empezarRonda(letra){
   juegoActivo=true;bloqueado=false;faseActual="jugando";letraActualRonda=letra;
-  respuestasRonda={};clearTimeout(timeoutEspera);timeoutEspera=null;
+  respuestasRonda={};listosParaRonda={};
+  clearTimeout(timeoutEspera);timeoutEspera=null;
+  limpiarContadorAnfitrion();
   Object.keys(jugadores).forEach(n=>jugadores[n].entregado=false);
   $("letra").textContent=letra;
   $("letra-titulo").textContent="Ronda en curso";
   $("letra-sub").textContent=`Escribí con la letra ${letra}`;
   $("btn-stop").disabled=false;$("btn-nueva").style.display="none";
+  $("btn-listo").style.display="none";
   $("stop-banner").style.display="none";$("card-resultados").style.display="none";
   $("card-form").style.display="block";$("lbl-editar").style.display="none";
-  $("btn-config").style.display="none"; // oculto durante la ronda
+  $("btn-config").style.display="none";
   $("mm-btn-config").style.display="none";
   document.querySelectorAll(".cat-input").forEach(inp=>{
     inp.value="";inp.disabled=false;inp.className="cat-input";inp.placeholder=`Con ${letra}...`;
@@ -832,8 +879,11 @@ function mostrarResultados(){
 
   $("tabla-resultados").innerHTML=`<table class="rtable"><thead><tr>${thead}</tr></thead><tbody>${tbody}<tr class="fila-total">${filaPts}</tr><tr class="fila-acum">${filaAcum}</tr></tbody></table>`;
 
-  if(esAnfitrion) setTimeout(()=>$("btn-nueva").style.display="flex",400);
-  else $("letra-sub").textContent=`Le toca iniciar la siguiente ronda a ${anfitrionActual()} 👑`;
+  if(esAnfitrion) setTimeout(()=>mostrarBtnNueva(),400);
+  else{
+    $("letra-sub").textContent=`Le toca iniciar la siguiente ronda a ${anfitrionActual()} 👑`;
+    setTimeout(()=>{$("btn-listo").style.display="block";},400);
+  }
 }
 
 function recalcAcum(nombre){
@@ -850,6 +900,68 @@ function actualizarFilaAcum(){
     const el=$("acum-"+n.replace(/\s/g,'_'));
     if(el) el.textContent=(puntajesAcum[n]||0)+" pts";
   });
+}
+
+// ── LISTO / CONTADOR ANFITRIÓN ──
+function mostrarBtnNueva(){
+  $("btn-nueva").style.display="flex";
+}
+
+function decirListo(){
+  $("btn-listo").disabled=true;
+  $("btn-listo").textContent="✋ ¡Listo!";
+  listosParaRonda[miNombre]=true;
+  enviar("listo");
+  renderListos();
+  if(Object.keys(listosParaRonda).length===1) arrancarContadorAnfitrion();
+}
+
+function arrancarContadorAnfitrion(){
+  limpiarContadorAnfitrion();
+  let segs=50;
+  $("contador-anfitrion").textContent=anfitrionActual();
+  $("contador-num").textContent=segs;
+  $("contador-wrap").style.display="flex";
+
+  intervaloContador=setInterval(()=>{
+    segs--;
+    $("contador-num").textContent=segs;
+    if(segs<=10) $("contador-num").style.color="var(--accent)";
+    if(segs<=0){ clearInterval(intervaloContador); intervaloContador=null; }
+  },1000);
+
+  timeoutAnfitrion=setTimeout(()=>{
+    const viejoAnfitrion=anfitrionActual();
+    turnoAnfitrion=(turnoAnfitrion+1)%ordenJugadores.length;
+    msgSistema(`⏰ ${viejoAnfitrion} no inició la ronda — el turno pasa a ${anfitrionActual()} 👑`);
+    enviar("transferir-anfitrion",{nuevoTurno:turnoAnfitrion});
+    limpiarContadorAnfitrion();
+    renderJugadores();
+    if(soyAnfitrionAhora()){
+      msgSistema("👑 ¡Te toca a vos!");
+      mostrarBtnNueva();
+      $("btn-listo").style.display="none";
+      $("btn-config").style.display="flex";
+      $("mm-btn-config").style.display="flex";
+    }
+  },50000);
+}
+
+function limpiarContadorAnfitrion(){
+  clearTimeout(timeoutAnfitrion); timeoutAnfitrion=null;
+  clearInterval(intervaloContador); intervaloContador=null;
+  $("contador-wrap").style.display="none";
+  $("contador-num").style.color="";
+  $("contador-num").textContent="50";
+  listosParaRonda={};
+  $("btn-listo").disabled=false;
+  $("btn-listo").textContent="✋ Estoy listo";
+}
+
+function renderListos(){
+  $("listos-chips").innerHTML=Object.keys(listosParaRonda).map(n=>
+    `<span class="topbar-chip listo" style="font-size:11px;">${n} ✓</span>`
+  ).join("");
 }
 
 // ── CONFIG MENÚ ──
