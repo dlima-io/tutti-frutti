@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -318,7 +318,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0.5</p>
+    <p class="setup-sub">v2.0.6</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -368,6 +368,13 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 
       <div class="topbar-sep"></div>
       <div class="topbar-jugadores" id="topbar-jugadores"></div>
+
+      <!-- Contador anfitrión — visible para todos, discreto en topbar -->
+      <div id="topbar-contador" style="display:none;align-items:center;gap:6px;flex-shrink:0;margin:0 8px;padding:3px 10px;background:var(--amber-dim);border:1px solid #f0d080;border-radius:20px;">
+        <span style="font-size:11px;color:#7a5a00;">⏱</span>
+        <span id="topbar-contador-num" style="font-size:13px;font-weight:700;color:var(--amber);min-width:20px;text-align:center;">50</span>
+        <span id="topbar-contador-label" style="font-size:11px;color:#7a5a00;"></span>
+      </div>
 
       <div class="topbar-conn">
         <div class="dot amarillo" id="dot"></div>
@@ -458,13 +465,6 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
         <button class="btn-stop" id="btn-stop" onclick="cantarStop()" disabled>S T O P</button>
         <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;white-space:nowrap;">▶ Nueva ronda</button>
         <button class="btn-listo" id="btn-listo" onclick="decirListo()" style="display:none;">✋ Estoy listo</button>
-      </div>
-      <div class="contador-wrap" id="contador-wrap">
-        <div class="contador-num" id="contador-num">50</div>
-        <div>
-          <div>El anfitrión tiene <strong id="contador-anfitrion">—</strong> para iniciar la ronda</div>
-          <div class="listos-chips" id="listos-chips"></div>
-        </div>
       </div>
 
     </div><!-- /col-juego -->
@@ -722,9 +722,11 @@ function onMensaje(msg){
 
   if(tipo==="listo"){
     listosParaRonda[d.from]=true;
-    renderListos();
-    // El primero en avisar arranca el contador
-    if(Object.keys(listosParaRonda).length===1) arrancarContadorAnfitrion();
+  }
+
+  if(tipo==="iniciar-contador"){
+    // Arranca el contador visual para todos (incluso el anfitrión)
+    arrancarContadorAnfitrion();
   }
 
   if(tipo==="transferir-anfitrion"){
@@ -912,28 +914,33 @@ function decirListo(){
   $("btn-listo").textContent="✋ ¡Listo!";
   listosParaRonda[miNombre]=true;
   enviar("listo");
-  renderListos();
-  if(Object.keys(listosParaRonda).length===1) arrancarContadorAnfitrion();
+  // Si soy el primero en avisar, disparo el contador para todos
+  if(Object.keys(listosParaRonda).length===1){
+    enviar("iniciar-contador",{anfitrion:anfitrionActual()});
+    arrancarContadorAnfitrion();
+  }
 }
 
 function arrancarContadorAnfitrion(){
   limpiarContadorAnfitrion();
   let segs=50;
-  $("contador-anfitrion").textContent=anfitrionActual();
-  $("contador-num").textContent=segs;
-  $("contador-wrap").style.display="flex";
+  const anfitrion=anfitrionActual();
+  $("topbar-contador-label").textContent=`→ ${anfitrion}`;
+  $("topbar-contador-num").textContent=segs;
+  $("topbar-contador-num").style.color="var(--amber)";
+  $("topbar-contador").style.display="flex";
 
   intervaloContador=setInterval(()=>{
     segs--;
-    $("contador-num").textContent=segs;
-    if(segs<=10) $("contador-num").style.color="var(--accent)";
+    $("topbar-contador-num").textContent=segs;
+    if(segs<=10) $("topbar-contador-num").style.color="var(--accent)";
     if(segs<=0){ clearInterval(intervaloContador); intervaloContador=null; }
   },1000);
 
   timeoutAnfitrion=setTimeout(()=>{
     const viejoAnfitrion=anfitrionActual();
     turnoAnfitrion=(turnoAnfitrion+1)%ordenJugadores.length;
-    msgSistema(`⏰ ${viejoAnfitrion} no inició la ronda — el turno pasa a ${anfitrionActual()} 👑`);
+    msgSistema(`⏰ ${viejoAnfitrion} no inició la ronda a tiempo — el turno pasa a ${anfitrionActual()} 👑`);
     enviar("transferir-anfitrion",{nuevoTurno:turnoAnfitrion});
     limpiarContadorAnfitrion();
     renderJugadores();
@@ -950,18 +957,14 @@ function arrancarContadorAnfitrion(){
 function limpiarContadorAnfitrion(){
   clearTimeout(timeoutAnfitrion); timeoutAnfitrion=null;
   clearInterval(intervaloContador); intervaloContador=null;
-  $("contador-wrap").style.display="none";
-  $("contador-num").style.color="";
-  $("contador-num").textContent="50";
+  $("topbar-contador").style.display="none";
+  $("topbar-contador-num").textContent="50";
+  $("topbar-contador-num").style.color="var(--amber)";
   listosParaRonda={};
-  $("btn-listo").disabled=false;
-  $("btn-listo").textContent="✋ Estoy listo";
-}
-
-function renderListos(){
-  $("listos-chips").innerHTML=Object.keys(listosParaRonda).map(n=>
-    `<span class="topbar-chip listo" style="font-size:11px;">${n} ✓</span>`
-  ).join("");
+  if($("btn-listo")){
+    $("btn-listo").disabled=false;
+    $("btn-listo").textContent="✋ Estoy listo";
+  }
 }
 
 // ── CONFIG MENÚ ──
