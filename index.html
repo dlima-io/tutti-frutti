@@ -567,6 +567,7 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
         <div class="status-bar" style="margin-bottom:8px;">
           <div class="dot amarillo" id="dot"></div>
           <span id="estado-conn">Conectando...</span>
+          <button onclick="salirSala()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;color:var(--text-2);cursor:pointer;" title="Salir de la sala">Salir</button>
         </div>
         <div class="players-row" id="players-row"></div>
       </div>
@@ -673,14 +674,16 @@ let sala = "", miNombre = "", soyCreador = false;
 let juegoActivo = false, bloqueado = false;
 let canal = null;
 let jugadores = {};       // { nombre: { nombre, listo, entregado } }
+let ordenJugadores = [];  // orden de llegada, para transferir anfitrión
 let respuestasRonda = {}; // { nombre: [resp0..resp9] }
 let puntajesAcum = {};    // { nombre: pts }
 let puntajesRonda = {};   // { nombre: pts } — editables
 let chatAbierto = false;
 let noLeidos = 0;
-let timeoutEspera = null; // timer para expulsar desconectados
-let faseActual = "esperando"; // "esperando" | "jugando" | "resultados"
+let timeoutEspera = null;
+let faseActual = "esperando";
 let letraActualRonda = "";
+let turnoAnfitrion = 0; // índice en ordenJugadores que tiene el turno esta ronda
 
 // ── HELPERS ───────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -692,7 +695,13 @@ function normalizar(s) {
     .replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();
 }
 
-// ── SETUP UI ──────────────────────────────────────────────
+function anfitrionActual() {
+  if (!ordenJugadores.length) return null;
+  return ordenJugadores[turnoAnfitrion % ordenJugadores.length];
+}
+function soyAnfitrionAhora() {
+  return anfitrionActual() === miNombre;
+}
 let modoSeleccionado = "tradicional";
 
 function seleccionarModo(modo, el) {
@@ -768,6 +777,7 @@ function unirse() {
 
 function arrancar() {
   jugadores[miNombre] = { nombre: miNombre, listo: true, entregado: false };
+  ordenJugadores = [miNombre];
   puntajesAcum[miNombre] = 0;
   $("screen-setup").style.display = "none";
   $("screen-game").style.display = "block";
@@ -778,7 +788,7 @@ function arrancar() {
     const b = $("info-sala");
     b.style.display = "block";
     b.innerHTML = `Compartí este código:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
-    $("btn-nueva").style.display = "flex";
+    $("btn-nueva").style.display = "flex"; // el creador arranca la primera ronda
   }
 }
 
@@ -809,15 +819,15 @@ function onMensaje(msg) {
     const n = d.nombre || d.from;
     const esNuevo = !jugadores[n];
     if (esNuevo) {
-      if (Object.keys(jugadores).length >= 6) return; // sala llena
+      if (Object.keys(jugadores).length >= 6) return;
       jugadores[n] = { nombre: n, listo: true, entregado: false };
+      ordenJugadores.push(n);
       puntajesAcum[n] = 0;
       msgSistema(`${n} se unió a la sala 👋`);
     }
     renderJugadores();
     if (tipo === "hola") {
       enviar("hola-back", { nombre: miNombre });
-      // Si soy el anfitrión, sincronizo el estado actual con el recién llegado
       if (soyCreador && esNuevo) {
         enviar("sync-estado", {
           para: n,
@@ -825,8 +835,44 @@ function onMensaje(msg) {
           letra: letraActualRonda,
           puntajesAcum: { ...puntajesAcum },
           categorias: CATEGORIAS,
+          ordenJugadores: [...ordenJugadores],
+          turno: turnoAnfitrion,
         });
       }
+    }
+  }
+
+  if (tipo === "salida") {
+    const n = d.from;
+    const eraAnfitrion = d.eraAnfitrion;
+    if (jugadores[n]) {
+      delete jugadores[n];
+      delete puntajesAcum[n];
+      ordenJugadores = ordenJugadores.filter(x => x !== n);
+      msgSistema(`${n} salió de la sala`);
+      renderJugadores();
+    }
+    // Si era el anfitrión, el siguiente en la lista hereda
+    if (eraAnfitrion && ordenJugadores.length > 0) {
+      const nuevoAnfitrion = ordenJugadores[0];
+      if (nuevoAnfitrion === miNombre) {
+        soyCreador = true;
+        msgSistema(`👑 Ahora sos el anfitrión`);
+        renderJugadores();
+        // Si hay una ronda en curso o resultados, mostrar botones de anfitrión
+        if (faseActual === "resultados") {
+          $("lbl-editar").style.display = "block";
+          // Hacer los inputs de pts editables
+          document.querySelectorAll(".pts-input").forEach(i => i.disabled = false);
+        }
+        $("btn-nueva").style.display = faseActual !== "jugando" ? "flex" : "none";
+      } else {
+        msgSistema(`👑 ${nuevoAnfitrion} es el nuevo anfitrión`);
+      }
+    }
+    // Si alguien salió y estábamos esperando sus respuestas, verificar resultados
+    if (faseActual === "jugando" && bloqueado) {
+      verificarResultados();
     }
   }
 
@@ -835,13 +881,16 @@ function onMensaje(msg) {
       CATEGORIAS = d.categorias;
       renderCategorias();
     }
-    msgSistema(`▶ Nueva ronda — letra ${d.letra}`);
+    if (typeof d.turno === "number") turnoAnfitrion = d.turno;
+    msgSistema(`▶ Nueva ronda — letra ${d.letra} — turno de ${anfitrionActual()} 👑`);
     empezarRonda(d.letra);
   }
 
   if (tipo === "sync-estado") {
     if (d.para !== miNombre) return;
     Object.assign(puntajesAcum, d.puntajesAcum || {});
+    if (d.ordenJugadores) ordenJugadores = d.ordenJugadores;
+    if (typeof d.turno === "number") turnoAnfitrion = d.turno;
     if (d.categorias && d.categorias.length) {
       CATEGORIAS = d.categorias;
       renderCategorias();
@@ -893,7 +942,9 @@ function onMensaje(msg) {
 function nuevaRonda() {
   if (Object.keys(jugadores).length < 2) { alert("Esperá que se una al menos una persona más"); return; }
   const letra = LETRAS[Math.floor(Math.random()*LETRAS.length)];
-  enviar("nueva-ronda", { letra, categorias: CATEGORIAS });
+  const nuevoTurno = (turnoAnfitrion + 1) % ordenJugadores.length;
+  enviar("nueva-ronda", { letra, categorias: CATEGORIAS, turno: nuevoTurno });
+  turnoAnfitrion = nuevoTurno;
   empezarRonda(letra);
 }
 
@@ -1047,7 +1098,7 @@ function mostrarResultados() {
   // Ocultar form, mostrar resultados
   $("card-form").style.display = "none";
   $("card-resultados").style.display = "block";
-  if (soyCreador) $("lbl-editar").style.display = "block";
+  if (soyAnfitrionAhora()) $("lbl-editar").style.display = "block";
 
   $("letra-titulo").textContent = "Ronda terminada";
   $("letra-sub").textContent = "";
@@ -1087,7 +1138,7 @@ function mostrarResultados() {
   // Fila puntos ronda (editables por anfitrión)
   let filaPts = `<td class="cat" style="font-weight:600">Esta ronda</td>`;
   nombres.forEach(n => {
-    if (soyCreador) {
+    if (soyAnfitrionAhora()) {
       filaPts += `<td><div class="pts-cell">
         <input class="pts-input" id="pts-${n}" type="number" value="${puntajesRonda[n]}"
           onchange="recalcAcum('${n}')" />
@@ -1113,10 +1164,11 @@ function mostrarResultados() {
       </tbody>
     </table>`;
 
-  if (soyCreador) {
+  if (soyAnfitrionAhora()) {
     setTimeout(() => $("btn-nueva").style.display = "flex", 400);
   } else {
-    $("letra-sub").textContent = "Esperá que el anfitrión inicie la siguiente ronda";
+    const prox = ordenJugadores[(turnoAnfitrion + 1) % ordenJugadores.length];
+    $("letra-sub").textContent = `Le toca iniciar la siguiente ronda a ${prox} 👑`;
   }
 }
 
@@ -1154,13 +1206,36 @@ function renderCategorias() {
 }
 
 function renderJugadores() {
+  const anfitrion = anfitrionActual();
+  const proximoAnfitrion = ordenJugadores[(turnoAnfitrion + 1) % ordenJugadores.length];
   $("players-row").innerHTML = Object.values(jugadores).map(j => {
     let cls = "chip";
     if (j.nombre === miNombre) cls += " yo";
     else if (j.entregado) cls += " entregado";
     else if (j.listo) cls += " listo";
-    return `<div class="${cls}">${j.nombre}${j.nombre===miNombre?" (vos)":""}${j.entregado?" ✓":""}</div>`;
+    const corona = j.nombre === anfitrion ? " 👑" : (faseActual === "resultados" && j.nombre === proximoAnfitrion ? " 👑?" : "");
+    const vos = j.nombre === miNombre ? " (vos)" : "";
+    const check = j.entregado ? " ✓" : "";
+    return `<div class="${cls}" title="${j.nombre === anfitrion ? "Anfitrión de esta ronda" : j.nombre === proximoAnfitrion && faseActual === "resultados" ? "Próximo anfitrión" : ""}">${j.nombre}${vos}${corona}${check}</div>`;
   }).join("");
+}
+
+function salirSala() {
+  if (!confirm("¿Querés salir de la sala?")) return;
+  enviar("salida", { eraAnfitrion: soyCreador });
+  if (canal) canal.unsubscribe();
+  sala = ""; miNombre = ""; soyCreador = false;
+  jugadores = {}; ordenJugadores = []; respuestasRonda = {};
+  puntajesAcum = {}; puntajesRonda = {};
+  juegoActivo = false; bloqueado = false;
+  faseActual = "esperando"; letraActualRonda = "";
+  clearTimeout(timeoutEspera); timeoutEspera = null;
+  $("screen-game").style.display = "none";
+  $("screen-setup").style.display = "flex";
+  $("inp-nombre").value = "";
+  $("inp-sala").value = "";
+  $("chat-msgs-desktop").innerHTML = "";
+  $("chat-msgs-mobile").innerHTML = "";
 }
 
 function setConn(color, txt) {
