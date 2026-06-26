@@ -72,8 +72,8 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 }
 .topbar-brand { font-weight:700; font-size:13px; color:var(--text); flex-shrink:0; margin-right:14px; }
 .topbar-sep { width:1px; height:20px; background:var(--border); flex-shrink:0; margin:0 10px; }
-.topbar-sala { font-size:11px; color:var(--text-3); flex-shrink:0; }
-.topbar-sala strong { font-size:13px; letter-spacing:2px; color:var(--text-2); }
+.topbar-sala { display:flex; align-items:center; gap:6px; flex-shrink:0; font-size:11px; color:var(--text-3); }
+.topbar-sala-code { font-size:13px; font-weight:700; letter-spacing:3px; color:var(--surface); background:var(--text); padding:2px 9px; border-radius:6px; }
 .topbar-jugadores { display:flex; align-items:center; gap:5px; flex:1; overflow:hidden; padding:0 4px; }
 .topbar-chip { padding:2px 8px; border-radius:20px; border:1px solid var(--border); font-size:11px; background:var(--bg); color:var(--text-2); white-space:nowrap; flex-shrink:0; }
 .topbar-chip.yo { border-color:var(--border-strong); color:var(--text); font-weight:600; }
@@ -222,26 +222,81 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 .chat-send { background:var(--text); color:white; border:none; border-radius:var(--radius-sm); padding:8px 12px; font-size:13px; font-family:inherit; cursor:pointer; flex-shrink:0; }
 .chat-send:hover { background:#333; }
 
-/* ── CHAT MOBILE FAB ── */
-.chat-fab { display:none; position:fixed; bottom:1.25rem; right:1.25rem; width:52px; height:52px; border-radius:50%; background:var(--text); color:white; border:none; font-size:22px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.2); z-index:100; align-items:center; justify-content:center; }
-.fab-badge { position:absolute; top:-2px; right:-2px; background:var(--accent); color:white; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; display:none; }
-.chat-popup { display:none; position:fixed; bottom:80px; right:1.25rem; width:calc(100vw - 2.5rem); max-width:360px; height:55vh; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 30px rgba(0,0,0,.15); z-index:99; flex-direction:column; overflow:hidden; }
-.chat-popup.open { display:flex; }
-.chat-popup-header { padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
-.chat-popup-header button { background:none; border:none; cursor:pointer; font-size:16px; color:var(--text-2); padding:0; }
+/* ── CHAT MOBILE PANEL ── */
+.btn-chat-mobile {
+  display:none;
+  background:none;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:3px 9px;
+  font-size:13px;
+  cursor:pointer;
+  color:var(--text-2);
+  line-height:1.6;
+  position:relative;
+}
+.btn-chat-mobile:hover { border-color:var(--border-strong); color:var(--text); }
+.chat-mobile-badge {
+  position:absolute;
+  top:-4px; right:-4px;
+  background:var(--accent);
+  color:white;
+  font-size:9px;
+  font-weight:700;
+  border-radius:10px;
+  padding:1px 4px;
+  display:none;
+  line-height:1.4;
+}
+
+/* Panel deslizable — arranca fuera de pantalla abajo */
+.chat-mobile-panel {
+  display:none;
+  position:fixed;
+  /* Se ancla justo encima del teclado usando visualViewport vía JS */
+  left:0; right:0;
+  bottom:0;
+  height:50vh;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-radius:14px 14px 0 0;
+  box-shadow:0 -4px 20px rgba(0,0,0,.12);
+  z-index:150;
+  flex-direction:column;
+  overflow:hidden;
+  transform:translateY(100%);
+  transition:transform .22s cubic-bezier(.4,0,.2,1);
+}
+.chat-mobile-panel.open {
+  display:flex;
+  transform:translateY(0);
+}
+.chat-mobile-panel-header {
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  font-weight:600;
+  font-size:13px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-shrink:0;
+}
+.chat-mobile-panel-header button {
+  background:none; border:none; cursor:pointer;
+  font-size:16px; color:var(--text-2); padding:0;
+}
 
 /* ── MOBILE ── */
 @media (max-width:700px) {
   #screen-game { height:auto; min-height:100vh; overflow:auto; }
   .game-layout { grid-template-columns:1fr; grid-template-rows:44px auto; height:auto; }
-  .col-juego { padding:1rem; padding-bottom:5rem; }
+  .col-juego { padding:1rem; padding-bottom:2rem; }
   .col-chat { display:none; }
-  .chat-fab { display:flex; }
   .letra-grande { font-size:52px; }
   .config-dropdown { right:0; left:auto; }
-  /* En mobile la topbar solo muestra marca + hamburguesa */
   .topbar-sep, .topbar-sala, .topbar-jugadores, .topbar-conn, .topbar-actions { display:none; }
-  .btn-hamburguesa { display:flex; margin-left:auto; }
+  .btn-hamburguesa { display:flex; }
+  .btn-chat-mobile { display:inline-flex; }
 }
 </style>
 </head>
@@ -251,7 +306,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0</p>
+    <p class="setup-sub">v2.0.1</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -297,7 +352,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
       <span class="topbar-brand">🍓 Tutti Frutti</span>
 
       <div class="topbar-sep"></div>
-      <div class="topbar-sala">Sala&nbsp;<strong id="topbar-sala-code">—</strong></div>
+      <div class="topbar-sala">Sala&nbsp;<span class="topbar-sala-code" id="topbar-sala-code">—</span></div>
 
       <div class="topbar-sep"></div>
       <div class="topbar-jugadores" id="topbar-jugadores"></div>
@@ -330,7 +385,10 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
         <button class="btn-salir" onclick="salirSala()">🚪 Salir</button>
       </div>
 
-      <!-- Hamburguesa solo mobile -->
+      <!-- Botón chat + hamburguesa solo mobile -->
+      <button class="btn-chat-mobile" onclick="toggleChatMobile(event)" id="btn-chat-mobile">
+        💬<span class="chat-mobile-badge" id="chat-mobile-badge"></span>
+      </button>
       <button class="btn-hamburguesa" onclick="toggleMobileMenu(event)">☰</button>
     </div>
 
@@ -357,7 +415,6 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
         <div class="players-row" id="players-row"></div>
       </div>
 
-      <div class="info-box" id="info-sala" style="display:none;"></div>
       <div class="stop-banner" id="stop-banner"></div>
 
       <!-- Letra -->
@@ -406,15 +463,16 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
   </div>
 </div>
 
-<!-- Chat mobile FAB -->
-<button class="chat-fab" id="chat-fab" onclick="toggleChatMobile()">
-  💬<span class="fab-badge" id="fab-badge"></span>
-</button>
-<div class="chat-popup" id="chat-popup">
-  <div class="chat-popup-header">💬 Chat<button onclick="toggleChatMobile()">✕</button></div>
+<!-- Chat mobile panel (deslizable, no colapsa el teclado) -->
+<div class="chat-mobile-panel" id="chat-mobile-panel">
+  <div class="chat-mobile-panel-header">
+    💬 Chat del grupo
+    <button onclick="toggleChatMobile()">✕</button>
+  </div>
   <div class="chat-msgs" id="chat-msgs-mobile"></div>
   <div class="chat-input-row">
-    <input class="chat-input" id="chat-inp-mobile" placeholder="Mensaje..." maxlength="200" onkeydown="if(event.key==='Enter') enviarChat('mobile')" />
+    <input class="chat-input" id="chat-inp-mobile" placeholder="Mensaje..." maxlength="200"
+      onkeydown="if(event.key==='Enter') enviarChat('mobile')" />
     <button class="chat-send" onclick="enviarChat('mobile')">↑</button>
   </div>
 </div>
@@ -529,9 +587,6 @@ function arrancar(){
   renderJugadores();
   conectarAbly();
   if(soyCreador){
-    const b=$("info-sala");
-    b.style.display="block";
-    b.innerHTML=`Compartí este código con tus amigos:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
     $("btn-nueva").style.display="flex";
     $("btn-config").style.display="flex";
     $("mm-btn-config").style.display="flex";
@@ -670,7 +725,7 @@ function empezarRonda(letra){
   $("letra-sub").textContent=`Escribí con la letra ${letra}`;
   $("btn-stop").disabled=false;$("btn-nueva").style.display="none";
   $("stop-banner").style.display="none";$("card-resultados").style.display="none";
-  $("card-form").style.display="block";$("info-sala").style.display="none";$("lbl-editar").style.display="none";
+  $("card-form").style.display="block";$("lbl-editar").style.display="none";
   $("btn-config").style.display="none"; // oculto durante la ronda
   $("mm-btn-config").style.display="none";
   document.querySelectorAll(".cat-input").forEach(inp=>{
@@ -916,22 +971,57 @@ function enviarChat(origen){
   agregarChat(miNombre,txt,hora,true);
   inp.value="";
 }
-function agregarChat(autor,texto,hora,propio){
-  const html=`<div class="chat-msg ${propio?"propio":"otro"}"><span class="autor">${autor}</span>${texto}<span class="hora">${hora}</span></div>`;
-  const dm=$("chat-msgs-desktop");dm.insertAdjacentHTML("beforeend",html);dm.scrollTop=dm.scrollHeight;
-  const mm=$("chat-msgs-mobile");mm.insertAdjacentHTML("beforeend",html);mm.scrollTop=mm.scrollHeight;
-  if(!propio&&!chatAbierto){noLeidos++;$("fab-badge").style.display="block";$("fab-badge").textContent=noLeidos;}
-}
 function msgSistema(txt){
   const html=`<div class="chat-msg sistema">${txt}</div>`;
   const dm=$("chat-msgs-desktop");dm.insertAdjacentHTML("beforeend",html);dm.scrollTop=dm.scrollHeight;
   const mm=$("chat-msgs-mobile");mm.insertAdjacentHTML("beforeend",html);mm.scrollTop=mm.scrollHeight;
 }
-function toggleChatMobile(){
+function toggleChatMobile(e){
+  if(e) e.stopPropagation();
   chatAbierto=!chatAbierto;
-  $("chat-popup").classList.toggle("open",chatAbierto);
-  if(chatAbierto){noLeidos=0;$("fab-badge").style.display="none";const mm=$("chat-msgs-mobile");mm.scrollTop=mm.scrollHeight;$("chat-inp-mobile").focus();}
+  const panel=$("chat-mobile-panel");
+  panel.classList.toggle("open", chatAbierto);
+  if(chatAbierto){
+    noLeidos=0;
+    $("chat-mobile-badge").style.display="none";
+    // Posicionar encima del teclado usando visualViewport
+    posicionarPanelChat();
+    const mm=$("chat-msgs-mobile");
+    setTimeout(()=>{ mm.scrollTop=mm.scrollHeight; $("chat-inp-mobile").focus(); }, 50);
+  }
 }
-</script>
+
+function posicionarPanelChat(){
+  const panel=$("chat-mobile-panel");
+  if(!panel.classList.contains("open")) return;
+  if(window.visualViewport){
+    const vv=window.visualViewport;
+    // El panel arranca donde termina el viewport visible
+    const offsetBottom=window.innerHeight - vv.height - vv.offsetTop;
+    panel.style.bottom=Math.max(0,offsetBottom)+"px";
+    panel.style.height=Math.min(vv.height*0.55, 320)+"px";
+  }
+}
+
+// Escuchar cambios del viewport (teclado sube/baja)
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", posicionarPanelChat);
+  window.visualViewport.addEventListener("scroll", posicionarPanelChat);
+}
+
+function agregarChat(autor,texto,hora,propio){
+  const html=`<div class="chat-msg ${propio?"propio":"otro"}"><span class="autor">${autor}</span>${texto}<span class="hora">${hora}</span></div>`;
+  const dm=$("chat-msgs-desktop");
+  dm.insertAdjacentHTML("beforeend",html);
+  dm.scrollTop=dm.scrollHeight;
+  const mm=$("chat-msgs-mobile");
+  mm.insertAdjacentHTML("beforeend",html);
+  mm.scrollTop=mm.scrollHeight;
+  if(!propio&&!chatAbierto){
+    noLeidos++;
+    $("chat-mobile-badge").style.display="block";
+    $("chat-mobile-badge").textContent=noLeidos;
+  }
+}</script>
 </body>
 </html>
