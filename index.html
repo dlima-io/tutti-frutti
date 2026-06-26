@@ -148,7 +148,12 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 .modal-footer { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
 .modal-footer .btn { width:auto; padding:8px 16px; font-size:13px; }
 
-/* ── PLAYERS ── */
+/* ── RULETA DE LETRAS ── */
+.letra-grande { font-size:72px; font-weight:800; line-height:1; color:var(--accent); min-width:80px; text-align:center; }
+.letra-grande.ruleta { cursor:pointer; animation:parpadeo .08s infinite; user-select:none; }
+.letra-grande.ruleta:hover { opacity:.85; }
+.letra-grande.frenada { animation:none; transform:scale(1.08); transition:transform .15s; }
+@keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:.7} }
 .players-row { display:flex; flex-wrap:wrap; gap:6px; }
 .chip { padding:4px 10px; border-radius:20px; border:1px solid var(--border); font-size:12px; background:var(--bg); color:var(--text-2); white-space:nowrap; }
 .chip.yo { border-color:var(--text); color:var(--text); font-weight:600; background:var(--surface); }
@@ -318,7 +323,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0.6</p>
+    <p class="setup-sub">v2.0.7</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -437,7 +442,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
       <!-- Letra -->
       <div class="card">
         <div class="letra-wrap">
-          <div class="letra-grande" id="letra">?</div>
+          <div class="letra-grande" id="letra" onclick="frenarRuleta()">?</div>
           <div class="letra-meta">
             <h2 id="letra-titulo">Esperando ronda</h2>
             <p id="letra-sub" style="color:var(--text-2);font-size:12px;margin-top:2px;"></p>
@@ -691,6 +696,11 @@ function onMensaje(msg){
     else if(d.fase==="resultados") msgSistema("Te uniste al final de una ronda, esperá la próxima.");
   }
 
+  if(tipo==="iniciar-ruleta"){
+    // Los demás ven la ruleta girar pero no pueden frenarla
+    arrancarRuleta();
+  }
+
   if(tipo==="nueva-ronda"){
     if(d.categorias?.length){CATEGORIAS=d.categorias;renderCategorias();}
     if(typeof d.turno==="number") turnoAnfitrion=d.turno;
@@ -756,21 +766,70 @@ function onMensaje(msg){
 }
 
 // ── JUEGO ──
+let ruletaTimer=null;
+let ruletaActiva=false;
+let letrasUsadas=[];
+
 function nuevaRonda(){
   if(Object.keys(jugadores).length<2){alert("Esperá que se una al menos una persona más");return;}
   limpiarContadorAnfitrion();
-  const letra=LETRAS[Math.floor(Math.random()*LETRAS.length)];
-  enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:turnoAnfitrion});
-  empezarRonda(letra);
+  // Avisar a todos que empieza la ruleta
+  enviar("iniciar-ruleta");
+  arrancarRuleta();
+}
+
+function arrancarRuleta(){
+  ruletaActiva=true;
+  const el=$("letra");
+  el.classList.add("ruleta");
+  el.classList.remove("frenada");
+  $("letra-titulo").textContent=soyAnfitrionAhora()?"¡Tocá para frenar!":"Eligiendo letra...";
+  $("letra-sub").textContent="";
+  $("card-form").style.display="none";
+  $("card-resultados").style.display="none";
+  $("btn-stop").disabled=true;
+  $("btn-nueva").style.display="none";
+  $("btn-listo").style.display="none";
+
+  // Ciclar letras muy rápido
+  const pool=LETRAS.filter(l=>!letrasUsadas.includes(l));
+  if(pool.length===0) letrasUsadas=[];
+  let idx=0;
+  clearInterval(ruletaTimer);
+  ruletaTimer=setInterval(()=>{
+    el.textContent=LETRAS[Math.floor(Math.random()*LETRAS.length)];
+  },60);
+}
+
+function frenarRuleta(){
+  if(!ruletaActiva||!soyAnfitrionAhora())return;
+  const letra=$("letra").textContent;
+  ruletaActiva=false;
+  clearInterval(ruletaTimer);
+  // Guardar para no repetir pronto
+  letrasUsadas.push(letra);
+  if(letrasUsadas.length>LETRAS.length-3) letrasUsadas.shift();
+  // Efecto visual de frenada
+  const el=$("letra");
+  el.classList.remove("ruleta");
+  el.classList.add("frenada");
+  // Avisar a todos y arrancar la ronda
+  setTimeout(()=>{
+    enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:turnoAnfitrion});
+    empezarRonda(letra);
+  },400);
 }
 
 function empezarRonda(letra){
+  ruletaActiva=false;
+  clearInterval(ruletaTimer);
   juegoActivo=true;bloqueado=false;faseActual="jugando";letraActualRonda=letra;
   respuestasRonda={};listosParaRonda={};
   clearTimeout(timeoutEspera);timeoutEspera=null;
   limpiarContadorAnfitrion();
   Object.keys(jugadores).forEach(n=>jugadores[n].entregado=false);
   $("letra").textContent=letra;
+  $("letra").classList.remove("ruleta","frenada");
   $("letra-titulo").textContent="Ronda en curso";
   $("letra-sub").textContent=`Escribí con la letra ${letra}`;
   $("btn-stop").disabled=false;$("btn-nueva").style.display="none";
