@@ -5,500 +5,189 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🍓 Tutti Frutti</title>
 <style>
-/* ── RESET & BASE ─────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f0ede8;
-  --surface: #ffffff;
-  --border: #e2ddd8;
-  --border-strong: #c8c2bb;
-  --text: #1a1714;
-  --text-2: #6b6560;
-  --text-3: #a8a09a;
-  --accent: #e63946;
-  --accent-dim: #fde8ea;
-  --green: #2a9d5c;
-  --green-dim: #e8f7ef;
-  --amber: #d4820a;
-  --amber-dim: #fef3dc;
-  --blue: #2563eb;
-  --blue-dim: #eff4ff;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --bg: #f0ede8; --surface: #ffffff; --border: #e2ddd8; --border-strong: #c8c2bb;
+  --text: #1a1714; --text-2: #6b6560; --text-3: #a8a09a;
+  --accent: #e63946; --accent-dim: #fde8ea;
+  --green: #2a9d5c; --green-dim: #e8f7ef;
+  --amber: #d4820a; --amber-dim: #fef3dc;
+  --blue: #2563eb; --blue-dim: #eff4ff;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
-html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
 
-/* ── SETUP SCREEN ─────────────────────────────────────── */
-#screen-setup {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-}
-.setup-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 2rem;
-  width: 100%;
-  max-width: 380px;
-}
-.setup-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-.setup-sub { color: var(--text-2); margin-bottom: 1.5rem; font-size: 13px; }
+/* ── SETUP ── */
+#screen-setup { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+.setup-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:2rem; width:100%; max-width:380px; }
+.setup-title { font-size:28px; font-weight:700; margin-bottom:4px; }
+.setup-sub { color:var(--text-2); margin-bottom:1.5rem; font-size:13px; }
+.field { margin-bottom:12px; }
+.field label { display:block; font-size:12px; color:var(--text-2); margin-bottom:5px; font-weight:500; }
+.field input { width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; font-size:15px; font-family:inherit; background:var(--bg); outline:none; color:var(--text); transition:border-color .15s; }
+.field input:focus { border-color:var(--border-strong); background:var(--surface); }
+.divider { text-align:center; font-size:12px; color:var(--text-3); margin:14px 0; }
 
-/* ── GAME LAYOUT ──────────────────────────────────────── */
-#screen-game { display: none; height: 100vh; overflow: hidden; }
+/* ── MODO SELECTOR ── */
+.modo-grid { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.modo-option { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all .15s; background:var(--bg); }
+.modo-option:hover { border-color:var(--border-strong); background:var(--surface); }
+.modo-option.selected { border-color:var(--text); background:var(--surface); }
+.modo-option input[type=radio] { margin-top:2px; accent-color:var(--text); flex-shrink:0; }
+.modo-label { font-size:13px; font-weight:600; }
+.modo-desc { font-size:11px; color:var(--text-2); margin-top:2px; }
+#custom-cats { display:none; margin-bottom:14px; }
+.custom-cat-list { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.custom-cat-row { display:flex; gap:6px; align-items:center; }
+.custom-cat-input { flex:1; border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; font-size:13px; font-family:inherit; background:var(--bg); outline:none; color:var(--text); }
+.custom-cat-input:focus { border-color:var(--border-strong); background:var(--surface); }
+.btn-rm { background:none; border:1px solid var(--border); border-radius:var(--radius-sm); width:28px; height:28px; cursor:pointer; color:var(--text-2); font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.btn-rm:hover { border-color:var(--accent); color:var(--accent); }
+.btn-add-cat { background:none; border:1px dashed var(--border-strong); border-radius:var(--radius-sm); padding:7px 12px; font-size:12px; font-family:inherit; cursor:pointer; color:var(--text-2); width:100%; transition:all .15s; }
+.btn-add-cat:hover { border-color:var(--text); color:var(--text); }
 
-/* Desktop: dos columnas */
-.game-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  grid-template-rows: 100vh;
-  height: 100vh;
-}
-.col-juego {
-  overflow-y: auto;
-  padding: 1.25rem 1rem 1.25rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.col-chat {
-  border-left: 1px solid var(--border);
-  background: var(--surface);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+/* ── GAME LAYOUT ── */
+#screen-game { display:none; height:100vh; overflow:hidden; }
+.game-layout { display:grid; grid-template-columns:1fr 320px; height:100vh; }
+.col-juego { overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:10px; }
+.col-chat { border-left:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; overflow:hidden; }
 
-/* ── CARDS ────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1rem;
-  box-shadow: var(--shadow);
-}
+/* ── CARDS ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; box-shadow:var(--shadow); }
 
-/* ── STATUS BAR ───────────────────────────────────────── */
-.status-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-2);
-}
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
-.dot.verde { background: var(--green); }
-.dot.amarillo { background: var(--amber); }
-.dot.rojo { background: var(--accent); }
+/* ── STATUS BAR ── */
+.status-bar { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-2); margin-bottom:8px; }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--text-3); flex-shrink:0; }
+.dot.verde { background:var(--green); }
+.dot.amarillo { background:var(--amber); }
+.dot.rojo { background:var(--accent); }
 
-/* ── PLAYERS ──────────────────────────────────────────── */
-.players-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  font-size: 12px;
-  background: var(--bg);
-  color: var(--text-2);
-  white-space: nowrap;
-}
-.chip.yo { border-color: var(--text); color: var(--text); font-weight: 600; background: var(--surface); }
-.chip.listo { border-color: var(--green); color: var(--green); background: var(--green-dim); }
-.chip.entregado { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+/* ── CONFIG DROPDOWN ── */
+.config-wrap { position:relative; margin-left:auto; display:flex; align-items:center; gap:6px; }
+.btn-icon { background:none; border:1px solid var(--border); border-radius:6px; padding:3px 8px; font-size:13px; cursor:pointer; color:var(--text-2); line-height:1.4; transition:all .15s; }
+.btn-icon:hover { border-color:var(--border-strong); color:var(--text); }
+.btn-salir { background:none; border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer; color:var(--text-2); transition:all .15s; }
+.btn-salir:hover { border-color:var(--accent); color:var(--accent); }
+.config-dropdown { display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 4px 20px rgba(0,0,0,0.13); z-index:200; min-width:260px; padding:6px; }
+.config-dropdown.open { display:block; }
+.cfg-title { font-size:11px; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; padding:6px 8px 4px; }
+.cfg-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; color:var(--text); transition:background .1s; }
+.cfg-item:hover { background:var(--bg); }
+.cfg-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; }
+.cfg-desc { font-size:11px; color:var(--text-3); }
+.cfg-sep { height:1px; background:var(--border); margin:4px 0; }
 
-/* ── LETRA ────────────────────────────────────────────── */
-.letra-wrap { display: flex; align-items: center; gap: 1rem; }
-.letra-grande {
-  font-size: 72px;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--accent);
-  min-width: 80px;
-  text-align: center;
-}
-.letra-meta { flex: 1; }
-.letra-meta h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-.letra-meta p { font-size: 12px; color: var(--text-2); }
+/* ── MODAL ── */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:300; align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 30px rgba(0,0,0,0.15); width:100%; max-width:400px; max-height:85vh; overflow-y:auto; }
+.modal-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-header h3 { font-size:15px; font-weight:600; }
+.modal-close { background:none; border:none; cursor:pointer; font-size:18px; color:var(--text-2); padding:0; }
+.modal-body { padding:16px; }
+.modal-footer { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; }
+.modal-footer .btn { width:auto; padding:8px 16px; font-size:13px; }
 
-/* ── FORMULARIO ───────────────────────────────────────── */
-.cat-grid { display: flex; flex-direction: column; gap: 6px; }
-.cat-row { display: flex; align-items: center; gap: 8px; }
-.cat-label { font-size: 12px; color: var(--text-2); width: 120px; flex-shrink: 0; }
-.cat-input {
-  flex: 1;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--bg);
-  outline: none;
-  transition: border-color 0.15s, background 0.15s;
-  color: var(--text);
-}
-.cat-input:focus { border-color: var(--border-strong); background: var(--surface); }
-.cat-input:disabled { opacity: 0.5; cursor: not-allowed; }
-.cat-input.ok { border-color: var(--green); background: var(--green-dim); }
-.cat-input.repetida { border-color: var(--amber); background: var(--amber-dim); }
-.cat-input.invalida { border-color: var(--accent); background: var(--accent-dim); }
+/* ── PLAYERS ── */
+.players-row { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { padding:4px 10px; border-radius:20px; border:1px solid var(--border); font-size:12px; background:var(--bg); color:var(--text-2); white-space:nowrap; }
+.chip.yo { border-color:var(--text); color:var(--text); font-weight:600; background:var(--surface); }
+.chip.listo { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.chip.entregado { border-color:var(--blue); color:var(--blue); background:var(--blue-dim); }
 
-/* ── RESULTADOS TABLA ─────────────────────────────────── */
-.resultados-wrap { overflow-x: auto; }
-.rtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.rtable th {
-  text-align: left;
-  padding: 6px 8px;
-  color: var(--text-2);
-  font-weight: 500;
-  border-bottom: 2px solid var(--border);
-  white-space: nowrap;
-  font-size: 12px;
-}
-.rtable td {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-.rtable tr:last-child td { border-bottom: none; }
-.rtable td.cat { color: var(--text-2); font-size: 12px; white-space: nowrap; }
-.rtable tr.fila-total td { font-weight: 700; border-top: 2px solid var(--border); padding-top: 10px; border-bottom: none; background: var(--bg); }
-.rtable tr.fila-acum td { font-size: 12px; color: var(--text-2); border-bottom: none; }
-.rbadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.rbadge.ok { background: var(--green-dim); color: var(--green); }
-.rbadge.rep { background: var(--amber-dim); color: var(--amber); }
-.rbadge.inv { background: var(--accent-dim); color: var(--accent); }
-.rbadge.vacia { background: var(--bg); color: var(--text-3); }
+/* ── LETRA ── */
+.letra-wrap { display:flex; align-items:center; gap:1rem; }
+.letra-grande { font-size:72px; font-weight:800; line-height:1; color:var(--accent); min-width:80px; text-align:center; }
+.letra-meta h2 { font-size:15px; font-weight:600; margin-bottom:2px; }
 
-/* pts editables */
-.pts-cell { display: flex; align-items: center; gap: 4px; }
-.pts-input {
-  width: 44px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 6px;
-  font-size: 13px;
-  font-family: inherit;
-  text-align: center;
-  background: var(--bg);
-  color: var(--text);
-  outline: none;
-}
-.pts-input:focus { border-color: var(--border-strong); background: var(--surface); }
-.pts-input:disabled { border-color: transparent; background: transparent; font-weight: 600; }
+/* ── FORM ── */
+.cat-grid { display:flex; flex-direction:column; gap:6px; }
+.cat-row { display:flex; align-items:center; gap:8px; }
+.cat-label { font-size:12px; color:var(--text-2); width:130px; flex-shrink:0; }
+.cat-input { flex:1; border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; font-size:14px; font-family:inherit; background:var(--bg); outline:none; color:var(--text); transition:border-color .15s; }
+.cat-input:focus { border-color:var(--border-strong); background:var(--surface); }
+.cat-input:disabled { opacity:.5; cursor:not-allowed; }
+.cat-input.ok { border-color:var(--green); background:var(--green-dim); }
+.cat-input.rep { border-color:var(--amber); background:var(--amber-dim); }
+.cat-input.inv { border-color:var(--accent); background:var(--accent-dim); }
 
-/* ── BOTONES ──────────────────────────────────────────── */
-.btn {
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btn-full { width: 100%; }
-.btn-dark { background: var(--text); color: #fff; }
-.btn-dark:hover:not(:disabled) { background: #333; }
-.btn-outline { background: var(--surface); color: var(--text); border-color: var(--border); }
-.btn-outline:hover:not(:disabled) { background: var(--bg); }
-.btn-stop {
-  background: var(--accent);
-  color: white;
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  padding: 14px;
-  border-radius: var(--radius);
-  width: 100%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(230,57,70,0.25);
-}
-.btn-stop:active { transform: scale(0.97); }
-.btn-stop:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+/* ── RESULTADOS ── */
+.resultados-wrap { overflow-x:auto; }
+.rtable { width:100%; border-collapse:collapse; font-size:13px; }
+.rtable th { text-align:left; padding:6px 8px; color:var(--text-2); font-weight:500; border-bottom:2px solid var(--border); white-space:nowrap; font-size:12px; }
+.rtable td { padding:6px 8px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.rtable tr:last-child td { border-bottom:none; }
+.rtable td.cat { color:var(--text-2); font-size:12px; white-space:nowrap; }
+.rtable tr.fila-total td { font-weight:700; border-top:2px solid var(--border); padding-top:10px; border-bottom:none; background:var(--bg); }
+.rtable tr.fila-acum td { font-size:12px; color:var(--text-2); border-bottom:none; }
+.rbadge { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:2px 8px; border-radius:20px; font-weight:500; white-space:nowrap; }
+.rbadge.ok { background:var(--green-dim); color:var(--green); }
+.rbadge.rep { background:var(--amber-dim); color:var(--amber); }
+.rbadge.inv { background:var(--accent-dim); color:var(--accent); }
+.rbadge.vacia { background:var(--bg); color:var(--text-3); }
+.pts-cell { display:flex; align-items:center; gap:4px; }
+.pts-input { width:44px; border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:13px; font-family:inherit; text-align:center; background:var(--bg); color:var(--text); outline:none; }
+.pts-input:focus { border-color:var(--border-strong); }
+.pts-input:disabled { border-color:transparent; background:transparent; font-weight:600; }
 
-/* ── STOP BANNER ──────────────────────────────────────── */
-.stop-banner {
-  background: var(--accent);
-  color: white;
-  text-align: center;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  font-size: 15px;
-  display: none;
-}
+/* ── BOTONES ── */
+.btn { padding:10px 16px; border-radius:var(--radius-sm); border:1px solid transparent; font-size:14px; font-family:inherit; font-weight:500; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.btn:active { transform:scale(.98); }
+.btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.btn-full { width:100%; }
+.btn-dark { background:var(--text); color:#fff; }
+.btn-dark:hover:not(:disabled) { background:#333; }
+.btn-outline { background:var(--surface); color:var(--text); border-color:var(--border); }
+.btn-outline:hover:not(:disabled) { background:var(--bg); }
+.btn-stop { background:var(--accent); color:white; font-size:17px; font-weight:800; letter-spacing:3px; padding:14px; border-radius:var(--radius); width:100%; border:none; cursor:pointer; transition:all .15s; box-shadow:0 2px 8px rgba(230,57,70,.25); }
+.btn-stop:active { transform:scale(.97); }
+.btn-stop:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
 
-/* ── INFO BOX ─────────────────────────────────────────── */
-.info-box {
-  background: var(--amber-dim);
-  border: 1px solid #f0d080;
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #7a5a00;
-  line-height: 1.5;
-}
-.info-box .sala-code {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 5px;
-  display: block;
-  margin-top: 4px;
-}
+/* ── BANNERS ── */
+.stop-banner { background:var(--accent); color:white; text-align:center; padding:10px; border-radius:var(--radius-sm); font-weight:700; font-size:15px; display:none; }
+.info-box { background:var(--amber-dim); border:1px solid #f0d080; border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; color:#7a5a00; line-height:1.5; }
+.info-box .sala-code { font-size:24px; font-weight:800; letter-spacing:5px; display:block; margin-top:4px; }
+.legend { font-size:11px; color:var(--text-3); margin-top:8px; }
 
-/* ── CHAT (desktop) ───────────────────────────────────── */
-.chat-header-desktop {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--text-2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.chat-mensajes {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.chat-msg { font-size: 13px; line-height: 1.4; }
-.chat-msg .autor { font-weight: 600; margin-right: 4px; }
-.chat-msg.propio .autor { color: var(--text); }
-.chat-msg.otro .autor { color: var(--blue); }
-.chat-msg.sistema { color: var(--text-3); font-style: italic; font-size: 12px; }
-.chat-msg .hora { font-size: 11px; color: var(--text-3); margin-left: 4px; }
-.chat-input-row {
-  display: flex;
-  gap: 6px;
-  padding: 10px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-}
-.chat-input {
-  flex: 1;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--surface);
-  outline: none;
-  color: var(--text);
-}
-.chat-input:focus { border-color: var(--border-strong); }
-.chat-send {
-  background: var(--text);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.chat-send:hover { background: #333; }
+/* ── CHAT DESKTOP ── */
+.chat-header-d { padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600; font-size:13px; color:var(--text-2); }
+.chat-msgs { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:6px; }
+.chat-msg { font-size:13px; line-height:1.4; }
+.chat-msg .autor { font-weight:600; margin-right:4px; }
+.chat-msg.propio .autor { color:var(--text); }
+.chat-msg.otro .autor { color:var(--blue); }
+.chat-msg.sistema { color:var(--text-3); font-style:italic; font-size:12px; }
+.chat-msg .hora { font-size:11px; color:var(--text-3); margin-left:4px; }
+.chat-input-row { display:flex; gap:6px; padding:10px; border-top:1px solid var(--border); background:var(--bg); }
+.chat-input { flex:1; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:inherit; background:var(--surface); outline:none; color:var(--text); }
+.chat-input:focus { border-color:var(--border-strong); }
+.chat-send { background:var(--text); color:white; border:none; border-radius:var(--radius-sm); padding:8px 12px; font-size:13px; font-family:inherit; cursor:pointer; flex-shrink:0; }
+.chat-send:hover { background:#333; }
 
-/* ── CHAT MOBILE (FAB + popup) ────────────────────────── */
-.chat-fab {
-  display: none;
-  position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--text);
-  color: white;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-}
-.chat-fab .fab-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  background: var(--accent);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 10px;
-  padding: 1px 5px;
-  display: none;
-}
-.chat-popup {
-  display: none;
-  position: fixed;
-  bottom: 80px;
-  right: 1.25rem;
-  width: calc(100vw - 2.5rem);
-  max-width: 360px;
-  height: 55vh;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-  z-index: 99;
-  flex-direction: column;
-  overflow: hidden;
-}
-.chat-popup.open { display: flex; }
-.chat-popup-header {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.chat-popup-header button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: var(--text-2);
-  padding: 0;
-}
+/* ── CHAT MOBILE FAB ── */
+.chat-fab { display:none; position:fixed; bottom:1.25rem; right:1.25rem; width:52px; height:52px; border-radius:50%; background:var(--text); color:white; border:none; font-size:22px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.2); z-index:100; align-items:center; justify-content:center; }
+.fab-badge { position:absolute; top:-2px; right:-2px; background:var(--accent); color:white; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; display:none; }
+.chat-popup { display:none; position:fixed; bottom:80px; right:1.25rem; width:calc(100vw - 2.5rem); max-width:360px; height:55vh; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 30px rgba(0,0,0,.15); z-index:99; flex-direction:column; overflow:hidden; }
+.chat-popup.open { display:flex; }
+.chat-popup-header { padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
+.chat-popup-header button { background:none; border:none; cursor:pointer; font-size:16px; color:var(--text-2); padding:0; }
 
-/* ── FORM FIELDS ──────────────────────────────────────── */
-.field { margin-bottom: 12px; }
-.field:last-child { margin-bottom: 0; }
-.field label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 5px; font-weight: 500; }
-.field input {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-size: 15px;
-  font-family: inherit;
-  background: var(--bg);
-  outline: none;
-  color: var(--text);
-  transition: border-color 0.15s;
-}
-.field input:focus { border-color: var(--border-strong); background: var(--surface); }
-.divider { text-align: center; font-size: 12px; color: var(--text-3); margin: 14px 0; }
-
-.legend { font-size: 11px; color: var(--text-3); margin-top: 8px; }
-
-/* ── MODO SELECTOR ────────────────────────────────────── */
-.modo-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.modo-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.15s;
-  background: var(--bg);
-}
-.modo-option:hover { border-color: var(--border-strong); background: var(--surface); }
-.modo-option.selected { border-color: var(--text); background: var(--surface); }
-.modo-option input[type=radio] { margin-top: 2px; accent-color: var(--text); flex-shrink: 0; }
-.modo-label { font-size: 13px; font-weight: 600; }
-.modo-desc { font-size: 11px; color: var(--text-2); margin-top: 2px; }
-
-/* ── CATEGORÍAS PERSONALIZADAS ────────────────────────── */
-#custom-cats { display: none; margin-bottom: 14px; }
-.custom-cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-.custom-cat-row { display: flex; gap: 6px; align-items: center; }
-.custom-cat-input {
-  flex: 1;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--bg);
-  outline: none;
-  color: var(--text);
-}
-.custom-cat-input:focus { border-color: var(--border-strong); background: var(--surface); }
-.btn-remove-cat {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  color: var(--text-2);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.btn-remove-cat:hover { border-color: var(--accent); color: var(--accent); }
-.btn-add-cat {
-  background: none;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 7px 12px;
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-  color: var(--text-2);
-  width: 100%;
-  transition: all 0.15s;
-}
-.btn-add-cat:hover { border-color: var(--text); color: var(--text); }
-
-/* ── MOBILE ───────────────────────────────────────────── */
-@media (max-width: 700px) {
-  #screen-game { height: auto; min-height: 100vh; overflow: auto; }
-  .game-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    height: auto;
-  }
-  .col-juego { padding: 1rem; padding-bottom: 5rem; }
-  .col-chat { display: none; }
-  .chat-fab { display: flex; }
-  .letra-grande { font-size: 52px; }
+/* ── MOBILE ── */
+@media (max-width:700px) {
+  #screen-game { height:auto; min-height:100vh; overflow:auto; }
+  .game-layout { grid-template-columns:1fr; height:auto; }
+  .col-juego { padding:1rem; padding-bottom:5rem; }
+  .col-chat { display:none; }
+  .chat-fab { display:flex; }
+  .letra-grande { font-size:52px; }
+  .config-dropdown { right:auto; left:0; }
 }
 </style>
 </head>
 <body>
 
-<!-- ══ SETUP ══════════════════════════════════════════════ -->
+<!-- ══ SETUP ══ -->
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
@@ -507,75 +196,73 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
     </div>
-
-    <!-- Selector de modo (solo visible al crear) -->
     <div id="bloque-modo">
       <div style="font-size:12px;color:var(--text-2);font-weight:500;margin-bottom:8px;">Tipo de juego</div>
       <div class="modo-grid">
         <label class="modo-option selected" onclick="seleccionarModo('tradicional',this)">
           <input type="radio" name="modo" value="tradicional" checked />
-          <div>
-            <div class="modo-label">🎲 Tradicional</div>
-            <div class="modo-desc">Nombre, Ciudad, Animal, Color...</div>
-          </div>
+          <div><div class="modo-label">🎲 Tradicional</div><div class="modo-desc">Nombre, Ciudad, Animal, Color...</div></div>
         </label>
         <label class="modo-option" onclick="seleccionarModo('oficina',this)">
           <input type="radio" name="modo" value="oficina" />
-          <div>
-            <div class="modo-label">🏢 De oficina</div>
-            <div class="modo-desc">Insultos, Palabras en la cama, Maneras de agendar al amante...</div>
-          </div>
+          <div><div class="modo-label">🏢 De oficina</div><div class="modo-desc">Insultos, Palabras en la cama, Amante...</div></div>
         </label>
         <label class="modo-option" onclick="seleccionarModo('personalizado',this)">
           <input type="radio" name="modo" value="personalizado" />
-          <div>
-            <div class="modo-label">✏️ Personalizado</div>
-            <div class="modo-desc">Definí tus propias categorías</div>
-          </div>
+          <div><div class="modo-label">✏️ Personalizado</div><div class="modo-desc">Definí tus propias categorías</div></div>
         </label>
       </div>
-
-      <!-- Editor de categorías personalizadas -->
       <div id="custom-cats">
         <div style="font-size:12px;color:var(--text-2);font-weight:500;margin-bottom:6px;">Tus categorías <span id="custom-count" style="color:var(--text-3)">(0/10)</span></div>
         <div class="custom-cat-list" id="custom-cat-list"></div>
-        <button class="btn-add-cat" onclick="agregarCategoria()" id="btn-add-cat">+ Agregar categoría</button>
+        <button class="btn-add-cat" id="btn-add-cat" onclick="agregarCat('custom-cat-list','custom-count','btn-add-cat')">+ Agregar categoría</button>
       </div>
     </div>
-
     <button class="btn btn-dark btn-full" onclick="crearSala()" style="margin-top:4px;">Crear sala</button>
     <div class="divider">— o unite a una sala —</div>
     <div class="field">
       <label>Código de sala</label>
-      <input id="inp-sala" placeholder="Ej: ABC123" maxlength="6"
-        style="text-transform:uppercase;letter-spacing:4px;font-weight:700;"
-        oninput="this.value=this.value.toUpperCase()" />
+      <input id="inp-sala" placeholder="Ej: ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-weight:700;" oninput="this.value=this.value.toUpperCase()" />
     </div>
     <button class="btn btn-outline btn-full" onclick="unirse()">Unirse</button>
   </div>
 </div>
 
-<!-- ══ GAME ═══════════════════════════════════════════════ -->
+<!-- ══ GAME ══ -->
 <div id="screen-game">
   <div class="game-layout">
-
-    <!-- COLUMNA JUEGO -->
     <div class="col-juego">
 
-      <!-- Status + jugadores -->
-      <div class="card" style="padding: 10px 14px;">
-        <div class="status-bar" style="margin-bottom:8px;">
+      <!-- Status -->
+      <div class="card" style="padding:10px 14px;">
+        <div class="status-bar">
           <div class="dot amarillo" id="dot"></div>
           <span id="estado-conn">Conectando...</span>
-          <button onclick="salirSala()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;color:var(--text-2);cursor:pointer;" title="Salir de la sala">Salir</button>
+          <div class="config-wrap">
+            <button class="btn-icon" id="btn-config" style="display:none;" onclick="toggleConfig(event)" title="Configuración de sala">⚙️</button>
+            <button class="btn-salir" onclick="salirSala()">Salir</button>
+            <div class="config-dropdown" id="config-dropdown">
+              <div class="cfg-title">Cambiar juego</div>
+              <div class="cfg-item" onclick="cambiarModo('tradicional')">
+                <span class="cfg-icon">🎲</span>
+                <div><div>Tradicional</div><div class="cfg-desc">Nombre, Ciudad, Animal, Color...</div></div>
+              </div>
+              <div class="cfg-item" onclick="cambiarModo('oficina')">
+                <span class="cfg-icon">🏢</span>
+                <div><div>De oficina</div><div class="cfg-desc">Insultos, Palabras en la cama...</div></div>
+              </div>
+              <div class="cfg-sep"></div>
+              <div class="cfg-item" onclick="abrirModalCats()">
+                <span class="cfg-icon">✏️</span>
+                <div><div>Editar categorías</div><div class="cfg-desc">Personalizá las categorías actuales</div></div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="players-row" id="players-row"></div>
       </div>
 
-      <!-- Info sala (solo creador, antes de empezar) -->
       <div class="info-box" id="info-sala" style="display:none;"></div>
-
-      <!-- Stop banner -->
       <div class="stop-banner" id="stop-banner"></div>
 
       <!-- Letra -->
@@ -589,714 +276,521 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
         </div>
       </div>
 
-      <!-- Formulario de respuestas (visible durante la ronda) -->
+      <!-- Form respuestas -->
       <div class="card" id="card-form">
         <div class="cat-grid" id="cat-grid"></div>
       </div>
 
-      <!-- Resultados (visible al terminar) -->
+      <!-- Resultados -->
       <div class="card" id="card-resultados" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <span style="font-weight:700;font-size:14px;">Resultados</span>
           <span id="lbl-editar" style="font-size:12px;color:var(--text-2);display:none;">✏️ Editá los puntos si hay que corregir algo</span>
         </div>
-        <div class="resultados-wrap">
-          <div id="tabla-resultados"></div>
-        </div>
-        <div class="legend" style="margin-top:10px;">
-          ✅ Original: 10 pts &nbsp;·&nbsp; 🔄 Repetida: 5 pts &nbsp;·&nbsp; ❌ Inválida: −1 pt &nbsp;·&nbsp; — Vacía: 0 pts
-        </div>
+        <div class="resultados-wrap"><div id="tabla-resultados"></div></div>
+        <div class="legend" style="margin-top:10px;">✅ Original: 10pts &nbsp;·&nbsp; 🔄 Repetida: 5pts &nbsp;·&nbsp; ❌ Inválida: −1pt &nbsp;·&nbsp; — Vacía: 0pts</div>
       </div>
 
-      <!-- Botones de acción -->
+      <!-- Acciones -->
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-stop" id="btn-stop" onclick="cantarStop()" disabled>S T O P</button>
+        <button class="btn-stop" id="btn-stop" onclick="cantarStop()" disabled>S T O P</button>
         <button class="btn btn-outline" id="btn-nueva" onclick="nuevaRonda()" style="display:none;white-space:nowrap;">▶ Nueva ronda</button>
       </div>
 
     </div><!-- /col-juego -->
 
-    <!-- COLUMNA CHAT (desktop) -->
-    <div class="col-chat" id="col-chat-desktop">
-      <div class="chat-header-desktop">💬 Chat del grupo</div>
-      <div class="chat-mensajes" id="chat-msgs-desktop"></div>
+    <!-- Chat desktop -->
+    <div class="col-chat">
+      <div class="chat-header-d">💬 Chat del grupo</div>
+      <div class="chat-msgs" id="chat-msgs-desktop"></div>
       <div class="chat-input-row">
-        <input class="chat-input" id="chat-inp-desktop" placeholder="Mensaje..." maxlength="200"
-          onkeydown="if(event.key==='Enter') enviarChat('desktop')" />
+        <input class="chat-input" id="chat-inp-desktop" placeholder="Mensaje..." maxlength="200" onkeydown="if(event.key==='Enter') enviarChat('desktop')" />
         <button class="chat-send" onclick="enviarChat('desktop')">↑</button>
       </div>
     </div>
+  </div>
+</div>
 
-  </div><!-- /game-layout -->
-</div><!-- /screen-game -->
-
-<!-- CHAT MOBILE: FAB + Popup -->
+<!-- Chat mobile FAB -->
 <button class="chat-fab" id="chat-fab" onclick="toggleChatMobile()">
-  💬
-  <span class="fab-badge" id="fab-badge"></span>
+  💬<span class="fab-badge" id="fab-badge"></span>
 </button>
 <div class="chat-popup" id="chat-popup">
-  <div class="chat-popup-header">
-    💬 Chat del grupo
-    <button onclick="toggleChatMobile()">✕</button>
-  </div>
-  <div class="chat-mensajes" id="chat-msgs-mobile"></div>
+  <div class="chat-popup-header">💬 Chat<button onclick="toggleChatMobile()">✕</button></div>
+  <div class="chat-msgs" id="chat-msgs-mobile"></div>
   <div class="chat-input-row">
-    <input class="chat-input" id="chat-inp-mobile" placeholder="Mensaje..." maxlength="200"
-      onkeydown="if(event.key==='Enter') enviarChat('mobile')" />
+    <input class="chat-input" id="chat-inp-mobile" placeholder="Mensaje..." maxlength="200" onkeydown="if(event.key==='Enter') enviarChat('mobile')" />
     <button class="chat-send" onclick="enviarChat('mobile')">↑</button>
+  </div>
+</div>
+
+<!-- Modal editar categorías -->
+<div class="modal-overlay" id="modal-cats" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Editar categorías</h3>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:10px;">Los cambios aplican a partir de la próxima ronda. <span id="modal-count">(0/10)</span></p>
+      <div class="custom-cat-list" id="modal-cat-list"></div>
+      <button class="btn-add-cat" id="modal-btn-add" onclick="agregarCat('modal-cat-list','modal-count','modal-btn-add')">+ Agregar categoría</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-dark" onclick="guardarModalCats()">Guardar y avisar a todos</button>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
 <script>
-// ── CONFIG ────────────────────────────────────────────────
 const ABLY_KEY = "bJht8w.8EuVXg:UgP79w2cCdSsiHUhFLAwVWYg14oMlRXMekWRIKQqSbs";
-
 const MODOS = {
-  tradicional: [
-    "Nombre","Apellido","Ciudad","Animal",
-    "Fruta o verdura","Color","Marca",
-    "País","Película","Cosa u objeto"
-  ],
-  oficina: [
-    "Nombre","Maneras de agendar al amante","País o ciudad","Animal",
-    "Flor, Fruta o verdura","Color","Palabras en la cama",
-    "Música","Insultos","Cosa u objeto"
-  ]
+  tradicional: ["Nombre","Apellido","Ciudad","Animal","Fruta o verdura","Color","Marca","País","Película","Cosa u objeto"],
+  oficina:     ["Nombre","Maneras de agendar al amante","País o ciudad","Animal","Flor, Fruta o verdura","Color","Palabras en la cama","Música","Insultos","Cosa u objeto"]
 };
-
-let CATEGORIAS = [...MODOS.tradicional]; // se sobreescribe al arrancar
 const LETRAS = "ABCDEFGHIJLMNOPRSTUVZ".split("");
 
-// ── ESTADO ────────────────────────────────────────────────
-let sala = "", miNombre = "", soyCreador = false;
-let juegoActivo = false, bloqueado = false;
-let canal = null;
-let jugadores = {};       // { nombre: { nombre, listo, entregado } }
-let ordenJugadores = [];  // orden de llegada, para transferir anfitrión
-let respuestasRonda = {}; // { nombre: [resp0..resp9] }
-let puntajesAcum = {};    // { nombre: pts }
-let puntajesRonda = {};   // { nombre: pts } — editables
-let chatAbierto = false;
-let noLeidos = 0;
-let timeoutEspera = null;
-let faseActual = "esperando";
-let letraActualRonda = "";
-let turnoAnfitrion = 0; // índice en ordenJugadores que tiene el turno esta ronda
+let CATEGORIAS = [...MODOS.tradicional];
+let sala="", miNombre="", soyCreador=false;
+let juegoActivo=false, bloqueado=false, canal=null;
+let jugadores={}, ordenJugadores=[], respuestasRonda={}, puntajesAcum={}, puntajesRonda={};
+let chatAbierto=false, noLeidos=0;
+let timeoutEspera=null, faseActual="esperando", letraActualRonda="";
+let turnoAnfitrion=0;
+let modoSeleccionado="tradicional";
 
-// ── HELPERS ───────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-function genCodigo() { return Math.random().toString(36).substring(2,8).toUpperCase(); }
-function ahora() { return new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}); }
-function normalizar(s) {
-  return (s||"").toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();
-}
+const $=id=>document.getElementById(id);
+function genCodigo(){return Math.random().toString(36).substring(2,8).toUpperCase();}
+function ahora(){return new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});}
+function normalizar(s){return(s||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();}
+function anfitrionActual(){return ordenJugadores.length?ordenJugadores[turnoAnfitrion%ordenJugadores.length]:null;}
+function soyAnfitrionAhora(){return anfitrionActual()===miNombre;}
 
-function anfitrionActual() {
-  if (!ordenJugadores.length) return null;
-  return ordenJugadores[turnoAnfitrion % ordenJugadores.length];
-}
-function soyAnfitrionAhora() {
-  return anfitrionActual() === miNombre;
-}
-let modoSeleccionado = "tradicional";
+// ── SETUP UI ──
+window.onload=()=>{$("screen-setup").style.display="flex";$("inp-nombre").focus();};
 
-function seleccionarModo(modo, el) {
-  modoSeleccionado = modo;
-  document.querySelectorAll(".modo-option").forEach(o => o.classList.remove("selected"));
+function seleccionarModo(modo,el){
+  modoSeleccionado=modo;
+  document.querySelectorAll(".modo-option").forEach(o=>o.classList.remove("selected"));
   el.classList.add("selected");
-  $("custom-cats").style.display = modo === "personalizado" ? "block" : "none";
-  if (modo === "personalizado" && $("custom-cat-list").children.length === 0) {
-    // Arrancar con 5 filas vacías
-    for (let i = 0; i < 5; i++) agregarCategoria();
-  }
+  $("custom-cats").style.display=modo==="personalizado"?"block":"none";
+  if(modo==="personalizado"&&$("custom-cat-list").children.length===0)
+    for(let i=0;i<5;i++) agregarCat("custom-cat-list","custom-count","btn-add-cat");
 }
 
-function agregarCategoria() {
-  const list = $("custom-cat-list");
-  if (list.children.length >= 10) return;
-  const idx = list.children.length;
-  const row = document.createElement("div");
-  row.className = "custom-cat-row";
-  row.innerHTML = `
-    <input class="custom-cat-input" placeholder="Categoría ${idx+1}" maxlength="40" oninput="actualizarContador()" />
-    <button class="btn-remove-cat" onclick="eliminarCategoria(this)" title="Eliminar">✕</button>`;
+function agregarCat(listId,countId,btnId){
+  const list=$(listId);
+  if(list.children.length>=10)return;
+  const idx=list.children.length;
+  const row=document.createElement("div");
+  row.className="custom-cat-row";
+  row.innerHTML=`<input class="custom-cat-input" placeholder="Categoría ${idx+1}" maxlength="40" oninput="actualizarCount('${listId}','${countId}','${btnId}')" /><button class="btn-rm" onclick="eliminarCat(this,'${listId}','${countId}','${btnId}')">✕</button>`;
   list.appendChild(row);
-  actualizarContador();
+  actualizarCount(listId,countId,btnId);
+}
+function eliminarCat(btn,listId,countId,btnId){btn.parentElement.remove();actualizarCount(listId,countId,btnId);}
+function actualizarCount(listId,countId,btnId){
+  const n=$(listId).children.length;
+  $(countId).textContent=`(${n}/10)`;
+  $(btnId).style.display=n>=10?"none":"block";
+}
+function leerCatsDeList(listId){
+  return Array.from($(listId).querySelectorAll(".custom-cat-input")).map(i=>i.value.trim()).filter(v=>v);
 }
 
-function eliminarCategoria(btn) {
-  btn.parentElement.remove();
-  actualizarContador();
-}
-
-function actualizarContador() {
-  const n = $("custom-cat-list").children.length;
-  $("custom-count").textContent = `(${n}/10)`;
-  $("btn-add-cat").style.display = n >= 10 ? "none" : "block";
-}
-
-function leerCategoriasCustom() {
-  return Array.from($("custom-cat-list").querySelectorAll(".custom-cat-input"))
-    .map(i => i.value.trim()).filter(v => v.length > 0);
-}
-
-// ── CREAR / UNIRSE ────────────────────────────────────────
-function crearSala() {
-  const n = $("inp-nombre").value.trim();
-  if (!n) { alert("Poné tu nombre"); return; }
-
-  if (modoSeleccionado === "personalizado") {
-    const cats = leerCategoriasCustom();
-    if (cats.length < 3) { alert("Agregá al menos 3 categorías"); return; }
-    CATEGORIAS = cats;
+function crearSala(){
+  const n=$("inp-nombre").value.trim();
+  if(!n){alert("Poné tu nombre");return;}
+  if(modoSeleccionado==="personalizado"){
+    const cats=leerCatsDeList("custom-cat-list");
+    if(cats.length<3){alert("Agregá al menos 3 categorías");return;}
+    CATEGORIAS=cats;
   } else {
-    CATEGORIAS = [...MODOS[modoSeleccionado]];
+    CATEGORIAS=[...MODOS[modoSeleccionado]];
   }
-
-  miNombre = n; soyCreador = true; sala = genCodigo();
+  miNombre=n; soyCreador=true; sala=genCodigo();
   arrancar();
 }
-window.onload = () => {
-  $("screen-setup").style.display = "flex";
-  $("inp-nombre").focus();
-};
-
-function unirse() {
-  const n = $("inp-nombre").value.trim();
-  const c = $("inp-sala").value.trim().toUpperCase();
-  if (!n) { alert("Poné tu nombre"); return; }
-  if (c.length < 4) { alert("Ingresá el código de sala"); return; }
-  miNombre = n; soyCreador = false; sala = c;
-  // Al unirse, las categorías las manda el anfitrión via sync-estado
+function unirse(){
+  const n=$("inp-nombre").value.trim();
+  const c=$("inp-sala").value.trim().toUpperCase();
+  if(!n){alert("Poné tu nombre");return;}
+  if(c.length<4){alert("Ingresá el código de sala");return;}
+  miNombre=n; soyCreador=false; sala=c;
   arrancar();
 }
 
-function arrancar() {
-  jugadores[miNombre] = { nombre: miNombre, listo: true, entregado: false };
-  ordenJugadores = [miNombre];
-  puntajesAcum[miNombre] = 0;
-  $("screen-setup").style.display = "none";
-  $("screen-game").style.display = "block";
+function arrancar(){
+  jugadores[miNombre]={nombre:miNombre,listo:true,entregado:false};
+  ordenJugadores=[miNombre];
+  puntajesAcum[miNombre]=0;
+  $("screen-setup").style.display="none";
+  $("screen-game").style.display="block";
   renderCategorias();
   renderJugadores();
   conectarAbly();
-  if (soyCreador) {
-    const b = $("info-sala");
-    b.style.display = "block";
-    b.innerHTML = `Compartí este código:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
-    $("btn-nueva").style.display = "flex"; // el creador arranca la primera ronda
+  if(soyCreador){
+    const b=$("info-sala");
+    b.style.display="block";
+    b.innerHTML=`Compartí este código con tus amigos:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
+    $("btn-nueva").style.display="flex";
+    $("btn-config").style.display="flex"; // visible antes de empezar
   }
 }
 
-// ── ABLY ──────────────────────────────────────────────────
-function conectarAbly() {
+// ── ABLY ──
+function conectarAbly(){
   setConn("amarillo","Conectando...");
-  const ably = new Ably.Realtime({ key: ABLY_KEY });
-  canal = ably.channels.get("tutti-" + sala);
-  ably.connection.on("connected", () => {
+  const ably=new Ably.Realtime({key:ABLY_KEY});
+  canal=ably.channels.get("tutti-"+sala);
+  ably.connection.on("connected",()=>{
     setConn("verde","Conectado");
     canal.subscribe(onMensaje);
-    enviar("hola", { nombre: miNombre });
+    enviar("hola",{nombre:miNombre});
   });
-  ably.connection.on("disconnected", () => setConn("amarillo","Reconectando..."));
-  ably.connection.on("failed",       () => setConn("rojo","Sin conexión"));
+  ably.connection.on("disconnected",()=>setConn("amarillo","Reconectando..."));
+  ably.connection.on("failed",()=>setConn("rojo","Sin conexión"));
 }
+function enviar(tipo,datos={}){canal?.publish(tipo,{from:miNombre,...datos});}
 
-function enviar(tipo, datos={}) {
-  canal?.publish(tipo, { from: miNombre, ...datos });
-}
+// ── MENSAJES ──
+function onMensaje(msg){
+  const tipo=msg.name, d=msg.data;
+  if(d.from===miNombre)return;
 
-// ── MENSAJES ──────────────────────────────────────────────
-function onMensaje(msg) {
-  const tipo = msg.name, d = msg.data;
-  if (d.from === miNombre) return;
-
-  if (tipo === "hola" || tipo === "hola-back") {
-    const n = d.nombre || d.from;
-    const esNuevo = !jugadores[n];
-    if (esNuevo) {
-      if (Object.keys(jugadores).length >= 6) return;
-      jugadores[n] = { nombre: n, listo: true, entregado: false };
+  if(tipo==="hola"||tipo==="hola-back"){
+    const n=d.nombre||d.from, esNuevo=!jugadores[n];
+    if(esNuevo){
+      if(Object.keys(jugadores).length>=6)return;
+      jugadores[n]={nombre:n,listo:true,entregado:false};
       ordenJugadores.push(n);
-      puntajesAcum[n] = 0;
+      puntajesAcum[n]=0;
       msgSistema(`${n} se unió a la sala 👋`);
     }
     renderJugadores();
-    if (tipo === "hola") {
-      enviar("hola-back", { nombre: miNombre });
-      if (soyCreador && esNuevo) {
-        enviar("sync-estado", {
-          para: n,
-          fase: faseActual,
-          letra: letraActualRonda,
-          puntajesAcum: { ...puntajesAcum },
-          categorias: CATEGORIAS,
-          ordenJugadores: [...ordenJugadores],
-          turno: turnoAnfitrion,
-        });
+    if(tipo==="hola"){
+      enviar("hola-back",{nombre:miNombre});
+      if(soyCreador&&esNuevo){
+        enviar("sync-estado",{para:n,fase:faseActual,letra:letraActualRonda,
+          puntajesAcum:{...puntajesAcum},categorias:CATEGORIAS,
+          ordenJugadores:[...ordenJugadores],turno:turnoAnfitrion});
       }
     }
   }
 
-  if (tipo === "salida") {
-    const n = d.from;
-    const eraAnfitrion = d.eraAnfitrion;
-    if (jugadores[n]) {
-      delete jugadores[n];
-      delete puntajesAcum[n];
-      ordenJugadores = ordenJugadores.filter(x => x !== n);
+  if(tipo==="salida"){
+    const n=d.from, eraAnfitrion=d.eraAnfitrion;
+    if(jugadores[n]){
+      delete jugadores[n]; delete puntajesAcum[n];
+      ordenJugadores=ordenJugadores.filter(x=>x!==n);
       msgSistema(`${n} salió de la sala`);
       renderJugadores();
     }
-    // Si era el anfitrión, el siguiente en la lista hereda
-    if (eraAnfitrion && ordenJugadores.length > 0) {
-      const nuevoAnfitrion = ordenJugadores[0];
-      if (nuevoAnfitrion === miNombre) {
-        soyCreador = true;
-        msgSistema(`👑 Ahora sos el anfitrión`);
-        renderJugadores();
-        // Si hay una ronda en curso o resultados, mostrar botones de anfitrión
-        if (faseActual === "resultados") {
-          $("lbl-editar").style.display = "block";
-          // Hacer los inputs de pts editables
-          document.querySelectorAll(".pts-input").forEach(i => i.disabled = false);
+    if(eraAnfitrion&&ordenJugadores.length>0){
+      const nuevo=ordenJugadores[turnoAnfitrion%ordenJugadores.length];
+      if(nuevo===miNombre){
+        soyCreador=true;
+        $("btn-config").style.display="flex";
+        msgSistema("👑 Ahora sos el anfitrión de turno");
+        if(faseActual==="resultados"){
+          $("lbl-editar").style.display="block";
+          document.querySelectorAll(".pts-input").forEach(i=>i.disabled=false);
+          setTimeout(()=>$("btn-nueva").style.display="flex",400);
         }
-        $("btn-nueva").style.display = faseActual !== "jugando" ? "flex" : "none";
+        if(faseActual==="esperando") $("btn-nueva").style.display="flex";
       } else {
-        msgSistema(`👑 ${nuevoAnfitrion} es el nuevo anfitrión`);
+        msgSistema(`👑 ${nuevo} es el nuevo anfitrión de turno`);
       }
     }
-    // Si alguien salió y estábamos esperando sus respuestas, verificar resultados
-    if (faseActual === "jugando" && bloqueado) {
-      verificarResultados();
-    }
+    if(faseActual==="jugando"&&bloqueado) verificarResultados();
   }
 
-  if (tipo === "nueva-ronda") {
-    if (d.categorias && d.categorias.length) {
-      CATEGORIAS = d.categorias;
-      renderCategorias();
-    }
-    if (typeof d.turno === "number") turnoAnfitrion = d.turno;
+  if(tipo==="sync-estado"){
+    if(d.para!==miNombre)return;
+    Object.assign(puntajesAcum,d.puntajesAcum||{});
+    if(d.ordenJugadores) ordenJugadores=d.ordenJugadores;
+    if(typeof d.turno==="number") turnoAnfitrion=d.turno;
+    if(d.categorias?.length){CATEGORIAS=d.categorias;renderCategorias();}
+    if(d.fase==="jugando"&&d.letra){msgSistema(`▶ Te uniste en medio de una ronda — letra ${d.letra}`);empezarRonda(d.letra);}
+    else if(d.fase==="resultados") msgSistema("Te uniste al final de una ronda, esperá la próxima.");
+  }
+
+  if(tipo==="nueva-ronda"){
+    if(d.categorias?.length){CATEGORIAS=d.categorias;renderCategorias();}
+    if(typeof d.turno==="number") turnoAnfitrion=d.turno;
     msgSistema(`▶ Nueva ronda — letra ${d.letra} — turno de ${anfitrionActual()} 👑`);
     empezarRonda(d.letra);
   }
 
-  if (tipo === "sync-estado") {
-    if (d.para !== miNombre) return;
-    Object.assign(puntajesAcum, d.puntajesAcum || {});
-    if (d.ordenJugadores) ordenJugadores = d.ordenJugadores;
-    if (typeof d.turno === "number") turnoAnfitrion = d.turno;
-    if (d.categorias && d.categorias.length) {
-      CATEGORIAS = d.categorias;
-      renderCategorias();
-    }
-    if (d.fase === "jugando" && d.letra) {
-      msgSistema(`▶ Te uniste en medio de una ronda — letra ${d.letra}`);
-      empezarRonda(d.letra);
-    } else if (d.fase === "resultados") {
-      msgSistema("Te uniste al final de una ronda, esperá la próxima.");
-    }
-  }
-
-  if (tipo === "stop") {
-    if (!bloqueado) {
-      bloqueado = true; juegoActivo = false;
-      bloquearForm();
-      const mis = leerRespuestas();
-      respuestasRonda[miNombre] = mis;
-      jugadores[miNombre].entregado = true;
-      enviar("respuestas", { respuestas: mis });
+  if(tipo==="stop"){
+    if(!bloqueado){
+      bloqueado=true;juegoActivo=false;bloquearForm();
+      const mis=leerRespuestas();
+      respuestasRonda[miNombre]=mis;jugadores[miNombre].entregado=true;
+      enviar("respuestas",{respuestas:mis});
       mostrarStop(`🛑 ${d.from} cantó STOP`);
       msgSistema(`🛑 ${d.from} cantó STOP`);
-      renderJugadores();
-      verificarResultados();
+      renderJugadores();verificarResultados();
     }
   }
 
-  if (tipo === "respuestas") {
-    respuestasRonda[d.from] = d.respuestas;
-    if (jugadores[d.from]) jugadores[d.from].entregado = true;
-    renderJugadores();
-    verificarResultados();
+  if(tipo==="respuestas"){
+    respuestasRonda[d.from]=d.respuestas;
+    if(jugadores[d.from]) jugadores[d.from].entregado=true;
+    renderJugadores();verificarResultados();
   }
 
-  if (tipo === "pts-update") {
-    // El anfitrión mandó puntos corregidos
-    if (d.puntajesAcum) {
-      Object.assign(puntajesAcum, d.puntajesAcum);
-      actualizarFilaAcum();
-    }
+  if(tipo==="pts-update"){
+    if(d.puntajesAcum){Object.assign(puntajesAcum,d.puntajesAcum);actualizarFilaAcum();}
   }
 
-  if (tipo === "chat") {
-    agregarChat(d.from, d.texto, d.hora, false);
+  if(tipo==="cats-update"){
+    CATEGORIAS=d.categorias;
+    renderCategorias();
+    msgSistema(`⚙️ ${d.from} cambió las categorías — aplican desde la próxima ronda`);
   }
+
+  if(tipo==="chat") agregarChat(d.from,d.texto,d.hora,false);
 }
 
-// ── JUEGO ─────────────────────────────────────────────────
-function nuevaRonda() {
-  if (Object.keys(jugadores).length < 2) { alert("Esperá que se una al menos una persona más"); return; }
-  const letra = LETRAS[Math.floor(Math.random()*LETRAS.length)];
-  const nuevoTurno = (turnoAnfitrion + 1) % ordenJugadores.length;
-  enviar("nueva-ronda", { letra, categorias: CATEGORIAS, turno: nuevoTurno });
-  turnoAnfitrion = nuevoTurno;
+// ── JUEGO ──
+function nuevaRonda(){
+  if(Object.keys(jugadores).length<2){alert("Esperá que se una al menos una persona más");return;}
+  const letra=LETRAS[Math.floor(Math.random()*LETRAS.length)];
+  const nuevoTurno=(turnoAnfitrion+1)%ordenJugadores.length;
+  enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:nuevoTurno});
+  turnoAnfitrion=nuevoTurno;
   empezarRonda(letra);
 }
 
-function empezarRonda(letra) {
-  juegoActivo = true; bloqueado = false;
-  faseActual = "jugando";
-  letraActualRonda = letra;
-  respuestasRonda = {};
-  clearTimeout(timeoutEspera);
-  timeoutEspera = null;
-  Object.keys(jugadores).forEach(n => jugadores[n].entregado = false);
-
-  $("letra").textContent = letra;
-  $("letra-titulo").textContent = "Ronda en curso";
-  $("letra-sub").textContent = `Escribí con la letra ${letra}`;
-  $("btn-stop").disabled = false;
-  $("btn-nueva").style.display = "none";
-  $("stop-banner").style.display = "none";
-  $("card-resultados").style.display = "none";
-  $("card-form").style.display = "block";
-  $("info-sala").style.display = "none";
-  $("lbl-editar").style.display = "none";
-
-  document.querySelectorAll(".cat-input").forEach(inp => {
-    inp.value = ""; inp.disabled = false; inp.className = "cat-input";
-    inp.placeholder = `Con ${letra}...`;
+function empezarRonda(letra){
+  juegoActivo=true;bloqueado=false;faseActual="jugando";letraActualRonda=letra;
+  respuestasRonda={};clearTimeout(timeoutEspera);timeoutEspera=null;
+  Object.keys(jugadores).forEach(n=>jugadores[n].entregado=false);
+  $("letra").textContent=letra;
+  $("letra-titulo").textContent="Ronda en curso";
+  $("letra-sub").textContent=`Escribí con la letra ${letra}`;
+  $("btn-stop").disabled=false;$("btn-nueva").style.display="none";
+  $("stop-banner").style.display="none";$("card-resultados").style.display="none";
+  $("card-form").style.display="block";$("info-sala").style.display="none";$("lbl-editar").style.display="none";
+  $("btn-config").style.display="none"; // oculto durante la ronda
+  document.querySelectorAll(".cat-input").forEach(inp=>{
+    inp.value="";inp.disabled=false;inp.className="cat-input";inp.placeholder=`Con ${letra}...`;
   });
   renderJugadores();
   document.querySelector(".cat-input")?.focus();
 }
 
-function cantarStop() {
-  if (!juegoActivo || bloqueado) return;
-  bloqueado = true; juegoActivo = false;
-  bloquearForm();
-  const mis = leerRespuestas();
-  respuestasRonda[miNombre] = mis;
-  jugadores[miNombre].entregado = true;
-  enviar("stop");
-  enviar("respuestas", { respuestas: mis });
-  mostrarStop("🛑 ¡Cantaste STOP!");
-  msgSistema("🛑 ¡Cantaste STOP!");
-  renderJugadores();
-  verificarResultados();
+function cantarStop(){
+  if(!juegoActivo||bloqueado)return;
+  bloqueado=true;juegoActivo=false;bloquearForm();
+  const mis=leerRespuestas();
+  respuestasRonda[miNombre]=mis;jugadores[miNombre].entregado=true;
+  enviar("stop");enviar("respuestas",{respuestas:mis});
+  mostrarStop("🛑 ¡Cantaste STOP!");msgSistema("🛑 ¡Cantaste STOP!");
+  renderJugadores();verificarResultados();
 }
 
-function bloquearForm() {
-  $("btn-stop").disabled = true;
-  document.querySelectorAll(".cat-input").forEach(i => i.disabled = true);
-}
+function bloquearForm(){$("btn-stop").disabled=true;document.querySelectorAll(".cat-input").forEach(i=>i.disabled=true);}
+function leerRespuestas(){return CATEGORIAS.map((_,i)=>($("cat-"+i)?.value.trim()||""));}
+function mostrarStop(msg){$("stop-banner").textContent=msg;$("stop-banner").style.display="block";}
 
-function leerRespuestas() {
-  return CATEGORIAS.map((_,i) => ($("cat-"+i)?.value.trim() || ""));
-}
-
-function mostrarStop(msg) {
-  $("stop-banner").textContent = msg;
-  $("stop-banner").style.display = "block";
-}
-
-function verificarResultados() {
-  const total = Object.keys(jugadores).length;
-  const listos = Object.keys(respuestasRonda).length;
-
-  if (listos >= total) {
-    clearTimeout(timeoutEspera);
-    mostrarResultados();
-    return;
-  }
-
-  const faltaN = total - listos;
-  $("letra-sub").textContent = `Esperando respuestas de ${faltaN} jugador${faltaN>1?"es":""}... (15s)`;
-
-  // Iniciar timeout solo la primera vez (cuando listos === 1 significa que recién se activó el stop)
-  if (!timeoutEspera) {
-    let segs = 15;
-    const intervalo = setInterval(() => {
+function verificarResultados(){
+  const total=Object.keys(jugadores).length, listos=Object.keys(respuestasRonda).length;
+  if(listos>=total){clearTimeout(timeoutEspera);mostrarResultados();return;}
+  const faltaN=total-listos;
+  $("letra-sub").textContent=`Esperando respuestas de ${faltaN} jugador${faltaN>1?"es":""}... (15s)`;
+  if(!timeoutEspera){
+    let segs=15;
+    const iv=setInterval(()=>{
       segs--;
-      const faltanAun = Object.keys(jugadores).length - Object.keys(respuestasRonda).length;
-      if (faltanAun <= 0 || segs <= 0) {
-        clearInterval(intervalo);
-        return;
-      }
-      $("letra-sub").textContent = `Esperando respuestas de ${faltanAun} jugador${faltanAun>1?"es":""}... (${segs}s)`;
-    }, 1000);
-
-    timeoutEspera = setTimeout(() => {
-      clearInterval(intervalo);
-      timeoutEspera = null;
-      // Expulsar a los que no respondieron
-      const ausentes = Object.keys(jugadores).filter(n => !respuestasRonda[n]);
-      ausentes.forEach(n => {
-        if (n === miNombre) return;
-        delete jugadores[n];
-        msgSistema(`⚠️ ${n} no respondió a tiempo y fue removido de la ronda`);
-      });
-      renderJugadores();
-      mostrarResultados();
-    }, 15000);
+      const f=Object.keys(jugadores).length-Object.keys(respuestasRonda).length;
+      if(f<=0||segs<=0){clearInterval(iv);return;}
+      $("letra-sub").textContent=`Esperando respuestas de ${f} jugador${f>1?"es":""}... (${segs}s)`;
+    },1000);
+    timeoutEspera=setTimeout(()=>{
+      clearInterval(iv);timeoutEspera=null;
+      const ausentes=Object.keys(jugadores).filter(n=>!respuestasRonda[n]);
+      ausentes.forEach(n=>{if(n===miNombre)return;delete jugadores[n];msgSistema(`⚠️ ${n} no respondió a tiempo y fue removido de la ronda`);});
+      renderJugadores();mostrarResultados();
+    },15000);
   }
 }
 
-function calcularPuntos(letra) {
-  const nombres = Object.keys(jugadores);
-  puntajesRonda = {};
-  nombres.forEach(n => puntajesRonda[n] = 0);
-
-  CATEGORIAS.forEach((_,i) => {
-    const vals = nombres.map(n => normalizar((respuestasRonda[n]||[])[i]));
-
-    nombres.forEach((n,j) => {
-      const r = ((respuestasRonda[n]||[])[i]||"").trim();
-      const norm = vals[j];
-
-      if (!r) { /* 0 */ return; }
-
-      // Una sola letra = 0 puntos (no inválida, simplemente no cuenta)
-      if (norm.length <= 1) { return; }
-
-      // Verificar que empiece con la letra correcta
-      if (!norm.startsWith(normalizar(letra))) {
-        puntajesRonda[n] -= 1; // inválida
-        return;
-      }
-
-      // Contar cuántos pusieron lo mismo
-      const iguales = vals.filter(v => v === norm && v !== "").length;
-      if (iguales === 1) {
-        puntajesRonda[n] += 10; // original
-      } else {
-        puntajesRonda[n] += 5;  // repetida
-      }
+function calcularPuntos(letra){
+  const nombres=Object.keys(jugadores);
+  puntajesRonda={};nombres.forEach(n=>puntajesRonda[n]=0);
+  CATEGORIAS.forEach((_,i)=>{
+    const vals=nombres.map(n=>normalizar((respuestasRonda[n]||[])[i]));
+    nombres.forEach((n,j)=>{
+      const r=((respuestasRonda[n]||[])[i]||"").trim(), norm=vals[j];
+      if(!r||norm.length<=1)return;
+      if(!norm.startsWith(normalizar(letra))){puntajesRonda[n]-=1;return;}
+      const iguales=vals.filter(v=>v===norm&&v!=="").length;
+      puntajesRonda[n]+=iguales===1?10:5;
     });
   });
-
   return puntajesRonda;
 }
 
-function mostrarResultados() {
-  faseActual = "resultados";
-  clearTimeout(timeoutEspera);
-  const letra = $("letra").textContent;
-  const nombres = Object.keys(jugadores);
+function mostrarResultados(){
+  faseActual="resultados";clearTimeout(timeoutEspera);
+  const letra=$("letra").textContent, nombres=Object.keys(jugadores);
   calcularPuntos(letra);
+  nombres.forEach(n=>puntajesAcum[n]=(puntajesAcum[n]||0)+(puntajesRonda[n]||0));
+  $("card-form").style.display="none";$("card-resultados").style.display="block";
+  const esAnfitrion=soyAnfitrionAhora();
+  if(esAnfitrion){$("lbl-editar").style.display="block";$("btn-config").style.display="flex";}
+  $("letra-titulo").textContent="Ronda terminada";$("letra-sub").textContent="";
 
-  // Sumar al acumulado
-  nombres.forEach(n => {
-    puntajesAcum[n] = (puntajesAcum[n]||0) + (puntajesRonda[n]||0);
-  });
+  let thead=`<th style="width:110px">Categoría</th>`;
+  nombres.forEach(n=>thead+=`<th>${n}${n===miNombre?" <span style='font-size:10px;color:var(--text-3)'>(vos)</span>":""}</th>`);
 
-  // Ocultar form, mostrar resultados
-  $("card-form").style.display = "none";
-  $("card-resultados").style.display = "block";
-  if (soyAnfitrionAhora()) $("lbl-editar").style.display = "block";
-
-  $("letra-titulo").textContent = "Ronda terminada";
-  $("letra-sub").textContent = "";
-
-  // Construir tabla
-  let thead = `<th style="width:110px">Categoría</th>`;
-  nombres.forEach(n => {
-    thead += `<th>${n}${n===miNombre?" <span style='font-size:10px;color:var(--text-3)'>(vos)</span>":""}</th>`;
-  });
-
-  let tbody = "";
-  CATEGORIAS.forEach((cat,i) => {
-    const norm = letra ? normalizar(letra) : "";
-    const vals = nombres.map(n => normalizar((respuestasRonda[n]||[])[i]));
-    let row = `<td class="cat">${cat}</td>`;
-    nombres.forEach((n,j) => {
-      const r = ((respuestasRonda[n]||[])[i]||"").trim();
-      const v = vals[j];
-      if (!r) {
-        row += `<td><span class="rbadge vacia">—</span></td>`;
-      } else if (v.length <= 1) {
-        row += `<td><span class="rbadge vacia">— ${r}</span></td>`;
-      } else if (!v.startsWith(norm)) {
-        row += `<td><span class="rbadge inv">❌ ${r}</span></td>`;
-      } else {
-        const iguales = vals.filter(x => x===v && x!=="").length;
-        if (iguales===1) {
-          row += `<td><span class="rbadge ok">✅ ${r}</span></td>`;
-        } else {
-          row += `<td><span class="rbadge rep">🔄 ${r}</span></td>`;
-        }
-      }
+  const normLetra=normalizar(letra);
+  let tbody="";
+  CATEGORIAS.forEach((cat,i)=>{
+    const vals=nombres.map(n=>normalizar((respuestasRonda[n]||[])[i]));
+    let row=`<td class="cat">${cat}</td>`;
+    nombres.forEach((n,j)=>{
+      const r=((respuestasRonda[n]||[])[i]||"").trim(), v=vals[j];
+      if(!r) row+=`<td><span class="rbadge vacia">—</span></td>`;
+      else if(v.length<=1) row+=`<td><span class="rbadge vacia">— ${r}</span></td>`;
+      else if(!v.startsWith(normLetra)) row+=`<td><span class="rbadge inv">❌ ${r}</span></td>`;
+      else{const ig=vals.filter(x=>x===v&&x!=="").length;row+=`<td><span class="rbadge ${ig===1?"ok":"rep"}">${ig===1?"✅":"🔄"} ${r}</span></td>`;}
     });
-    tbody += `<tr>${row}</tr>`;
+    tbody+=`<tr>${row}</tr>`;
   });
 
-  // Fila puntos ronda (editables por anfitrión)
-  let filaPts = `<td class="cat" style="font-weight:600">Esta ronda</td>`;
-  nombres.forEach(n => {
-    if (soyAnfitrionAhora()) {
-      filaPts += `<td><div class="pts-cell">
-        <input class="pts-input" id="pts-${n}" type="number" value="${puntajesRonda[n]}"
-          onchange="recalcAcum('${n}')" />
-        <span style="font-size:11px;color:var(--text-3)">pts</span>
-      </div></td>`;
-    } else {
-      filaPts += `<td><div class="pts-cell"><input class="pts-input" id="pts-${n}" type="number" value="${puntajesRonda[n]}" disabled /><span style="font-size:11px;color:var(--text-3)">pts</span></div></td>`;
-    }
+  let filaPts=`<td class="cat" style="font-weight:600">Esta ronda</td>`;
+  nombres.forEach(n=>{
+    filaPts+=`<td><div class="pts-cell"><input class="pts-input" id="pts-${n.replace(/\s/g,'_')}" type="number" value="${puntajesRonda[n]}" ${esAnfitrion?`onchange="recalcAcum('${n}')"`:""} ${esAnfitrion?"":"disabled"} /><span style="font-size:11px;color:var(--text-3)">pts</span></div></td>`;
   });
+  let filaAcum=`<td class="cat">Total acumulado</td>`;
+  nombres.forEach(n=>filaAcum+=`<td id="acum-${n.replace(/\s/g,'_')}" style="font-weight:700">${puntajesAcum[n]} pts</td>`);
 
-  // Fila acumulado
-  let filaAcum = `<td class="cat">Total acumulado</td>`;
-  nombres.forEach(n => {
-    filaAcum += `<td id="acum-${n}" style="font-weight:700;">${puntajesAcum[n]} pts</td>`;
-  });
+  $("tabla-resultados").innerHTML=`<table class="rtable"><thead><tr>${thead}</tr></thead><tbody>${tbody}<tr class="fila-total">${filaPts}</tr><tr class="fila-acum">${filaAcum}</tr></tbody></table>`;
 
-  $("tabla-resultados").innerHTML = `
-    <table class="rtable">
-      <thead><tr>${thead}</tr></thead>
-      <tbody>${tbody}
-        <tr class="fila-total">${filaPts}</tr>
-        <tr class="fila-acum">${filaAcum}</tr>
-      </tbody>
-    </table>`;
-
-  if (soyAnfitrionAhora()) {
-    setTimeout(() => $("btn-nueva").style.display = "flex", 400);
-  } else {
-    const prox = ordenJugadores[(turnoAnfitrion + 1) % ordenJugadores.length];
-    $("letra-sub").textContent = `Le toca iniciar la siguiente ronda a ${prox} 👑`;
+  if(esAnfitrion) setTimeout(()=>$("btn-nueva").style.display="flex",400);
+  else{
+    const prox=ordenJugadores[(turnoAnfitrion+1)%ordenJugadores.length];
+    $("letra-sub").textContent=`Le toca iniciar la siguiente ronda a ${prox} 👑`;
   }
 }
 
-function recalcAcum(nombre) {
-  // Recalcular acumulado cuando el anfitrión edita puntos
-  const nombres = Object.keys(jugadores);
-  nombres.forEach(n => {
-    const inp = $("pts-"+n);
-    if (!inp) return;
-    const nuevoPts = parseInt(inp.value)||0;
-    const diff = nuevoPts - (puntajesRonda[n]||0);
-    puntajesAcum[n] = (puntajesAcum[n]||0) + diff;
-    puntajesRonda[n] = nuevoPts;
+function recalcAcum(nombre){
+  const nombres=Object.keys(jugadores);
+  nombres.forEach(n=>{
+    const inp=$("pts-"+n.replace(/\s/g,'_'));if(!inp)return;
+    const nuevo=parseInt(inp.value)||0, diff=nuevo-(puntajesRonda[n]||0);
+    puntajesAcum[n]=(puntajesAcum[n]||0)+diff;puntajesRonda[n]=nuevo;
   });
-  actualizarFilaAcum();
-  // Sincronizar con los demás
-  enviar("pts-update", { puntajesAcum });
+  actualizarFilaAcum();enviar("pts-update",{puntajesAcum});
 }
-
-function actualizarFilaAcum() {
-  Object.keys(jugadores).forEach(n => {
-    const el = $("acum-"+n);
-    if (el) el.textContent = (puntajesAcum[n]||0) + " pts";
+function actualizarFilaAcum(){
+  Object.keys(jugadores).forEach(n=>{
+    const el=$("acum-"+n.replace(/\s/g,'_'));
+    if(el) el.textContent=(puntajesAcum[n]||0)+" pts";
   });
 }
 
-// ── RENDER ────────────────────────────────────────────────
-function renderCategorias() {
-  $("cat-grid").innerHTML = CATEGORIAS.map((cat,i) =>
-    `<div class="cat-row">
-      <span class="cat-label">${cat}</span>
-      <input class="cat-input" id="cat-${i}" disabled placeholder="..." />
-    </div>`
+// ── CONFIG MENÚ ──
+function toggleConfig(e){
+  e.stopPropagation();
+  $("config-dropdown").classList.toggle("open");
+}
+document.addEventListener("click",()=>$("config-dropdown")?.classList.remove("open"));
+
+function cambiarModo(modo){
+  $("config-dropdown").classList.remove("open");
+  if(!confirm(`¿Cambiar a modo ${modo==="tradicional"?"Tradicional":"De oficina"}? Aplica desde la próxima ronda.`))return;
+  CATEGORIAS=[...MODOS[modo]];
+  renderCategorias();
+  enviar("cats-update",{categorias:CATEGORIAS});
+  msgSistema(`⚙️ Cambiaste a modo ${modo==="tradicional"?"Tradicional":"De oficina"} — aplica desde la próxima ronda`);
+}
+
+function abrirModalCats(){
+  $("config-dropdown").classList.remove("open");
+  // Poblar el modal con las categorías actuales
+  const list=$("modal-cat-list");list.innerHTML="";
+  CATEGORIAS.forEach(cat=>{
+    const row=document.createElement("div");row.className="custom-cat-row";
+    row.innerHTML=`<input class="custom-cat-input" value="${cat}" maxlength="40" oninput="actualizarCount('modal-cat-list','modal-count','modal-btn-add')" /><button class="btn-rm" onclick="eliminarCat(this,'modal-cat-list','modal-count','modal-btn-add')">✕</button>`;
+    list.appendChild(row);
+  });
+  actualizarCount("modal-cat-list","modal-count","modal-btn-add");
+  $("modal-cats").classList.add("open");
+}
+function cerrarModal(){$("modal-cats").classList.remove("open");}
+function guardarModalCats(){
+  const cats=leerCatsDeList("modal-cat-list");
+  if(cats.length<3){alert("Necesitás al menos 3 categorías");return;}
+  CATEGORIAS=cats;renderCategorias();
+  enviar("cats-update",{categorias:CATEGORIAS});
+  msgSistema("⚙️ Categorías actualizadas — aplican desde la próxima ronda");
+  cerrarModal();
+}
+
+// ── SALIR ──
+function salirSala(){
+  if(!confirm("¿Querés salir de la sala?"))return;
+  enviar("salida",{eraAnfitrion:soyAnfitrionAhora()});
+  if(canal)canal.unsubscribe();
+  sala="";miNombre="";soyCreador=false;
+  jugadores={};ordenJugadores=[];respuestasRonda={};puntajesAcum={};puntajesRonda={};
+  juegoActivo=false;bloqueado=false;faseActual="esperando";letraActualRonda="";turnoAnfitrion=0;
+  clearTimeout(timeoutEspera);timeoutEspera=null;
+  $("screen-game").style.display="none";$("screen-setup").style.display="flex";
+  $("inp-nombre").value="";$("inp-sala").value="";
+  $("chat-msgs-desktop").innerHTML="";$("chat-msgs-mobile").innerHTML="";
+}
+
+// ── RENDER ──
+function renderCategorias(){
+  $("cat-grid").innerHTML=CATEGORIAS.map((cat,i)=>
+    `<div class="cat-row"><span class="cat-label">${cat}</span><input class="cat-input" id="cat-${i}" disabled placeholder="..." /></div>`
   ).join("");
 }
-
-function renderJugadores() {
-  const anfitrion = anfitrionActual();
-  const proximoAnfitrion = ordenJugadores[(turnoAnfitrion + 1) % ordenJugadores.length];
-  $("players-row").innerHTML = Object.values(jugadores).map(j => {
-    let cls = "chip";
-    if (j.nombre === miNombre) cls += " yo";
-    else if (j.entregado) cls += " entregado";
-    else if (j.listo) cls += " listo";
-    const corona = j.nombre === anfitrion ? " 👑" : (faseActual === "resultados" && j.nombre === proximoAnfitrion ? " 👑?" : "");
-    const vos = j.nombre === miNombre ? " (vos)" : "";
-    const check = j.entregado ? " ✓" : "";
-    return `<div class="${cls}" title="${j.nombre === anfitrion ? "Anfitrión de esta ronda" : j.nombre === proximoAnfitrion && faseActual === "resultados" ? "Próximo anfitrión" : ""}">${j.nombre}${vos}${corona}${check}</div>`;
+function renderJugadores(){
+  const anfitrion=anfitrionActual();
+  const prox=ordenJugadores[(turnoAnfitrion+1)%ordenJugadores.length];
+  $("players-row").innerHTML=Object.values(jugadores).map(j=>{
+    let cls="chip";
+    if(j.nombre===miNombre)cls+=" yo";
+    else if(j.entregado)cls+=" entregado";
+    else if(j.listo)cls+=" listo";
+    const corona=j.nombre===anfitrion?" 👑":(faseActual==="resultados"&&j.nombre===prox?" 👑?":"");
+    return `<div class="${cls}">${j.nombre}${j.nombre===miNombre?" (vos)":""}${corona}${j.entregado?" ✓":""}</div>`;
   }).join("");
 }
+function setConn(c,t){$("dot").className="dot "+c;$("estado-conn").textContent=t;}
 
-function salirSala() {
-  if (!confirm("¿Querés salir de la sala?")) return;
-  enviar("salida", { eraAnfitrion: soyCreador });
-  if (canal) canal.unsubscribe();
-  sala = ""; miNombre = ""; soyCreador = false;
-  jugadores = {}; ordenJugadores = []; respuestasRonda = {};
-  puntajesAcum = {}; puntajesRonda = {};
-  juegoActivo = false; bloqueado = false;
-  faseActual = "esperando"; letraActualRonda = "";
-  clearTimeout(timeoutEspera); timeoutEspera = null;
-  $("screen-game").style.display = "none";
-  $("screen-setup").style.display = "flex";
-  $("inp-nombre").value = "";
-  $("inp-sala").value = "";
-  $("chat-msgs-desktop").innerHTML = "";
-  $("chat-msgs-mobile").innerHTML = "";
+// ── CHAT ──
+function enviarChat(origen){
+  const inp=$("chat-inp-"+origen), txt=inp.value.trim();
+  if(!txt)return;
+  const hora=ahora();
+  enviar("chat",{texto:txt,hora});
+  agregarChat(miNombre,txt,hora,true);
+  inp.value="";
 }
-
-function setConn(color, txt) {
-  $("dot").className = "dot "+color;
-  $("estado-conn").textContent = txt;
+function agregarChat(autor,texto,hora,propio){
+  const html=`<div class="chat-msg ${propio?"propio":"otro"}"><span class="autor">${autor}</span>${texto}<span class="hora">${hora}</span></div>`;
+  const dm=$("chat-msgs-desktop");dm.insertAdjacentHTML("beforeend",html);dm.scrollTop=dm.scrollHeight;
+  const mm=$("chat-msgs-mobile");mm.insertAdjacentHTML("beforeend",html);mm.scrollTop=mm.scrollHeight;
+  if(!propio&&!chatAbierto){noLeidos++;$("fab-badge").style.display="block";$("fab-badge").textContent=noLeidos;}
 }
-
-// ── CHAT ──────────────────────────────────────────────────
-function enviarChat(origen) {
-  const inp = $("chat-inp-"+origen);
-  const txt = inp.value.trim();
-  if (!txt) return;
-  const hora = ahora();
-  enviar("chat", { texto: txt, hora });
-  agregarChat(miNombre, txt, hora, true);
-  inp.value = "";
+function msgSistema(txt){
+  const html=`<div class="chat-msg sistema">${txt}</div>`;
+  const dm=$("chat-msgs-desktop");dm.insertAdjacentHTML("beforeend",html);dm.scrollTop=dm.scrollHeight;
+  const mm=$("chat-msgs-mobile");mm.insertAdjacentHTML("beforeend",html);mm.scrollTop=mm.scrollHeight;
 }
-
-function agregarChat(autor, texto, hora, propio) {
-  const html = `<div class="chat-msg ${propio?"propio":"otro"}">
-    <span class="autor">${autor}</span>${texto}<span class="hora">${hora}</span>
-  </div>`;
-
-  // Desktop
-  const dm = $("chat-msgs-desktop");
-  dm.insertAdjacentHTML("beforeend", html);
-  dm.scrollTop = dm.scrollHeight;
-
-  // Mobile
-  const mm = $("chat-msgs-mobile");
-  mm.insertAdjacentHTML("beforeend", html);
-  mm.scrollTop = mm.scrollHeight;
-
-  // Badge mobile si popup cerrado y no es propio
-  if (!propio && !chatAbierto) {
-    noLeidos++;
-    $("fab-badge").style.display = "block";
-    $("fab-badge").textContent = noLeidos;
-  }
-}
-
-function msgSistema(txt) {
-  const html = `<div class="chat-msg sistema">${txt}</div>`;
-  const dm = $("chat-msgs-desktop");
-  dm.insertAdjacentHTML("beforeend", html);
-  dm.scrollTop = dm.scrollHeight;
-  const mm = $("chat-msgs-mobile");
-  mm.insertAdjacentHTML("beforeend", html);
-  mm.scrollTop = mm.scrollHeight;
-}
-
-function toggleChatMobile() {
-  chatAbierto = !chatAbierto;
-  $("chat-popup").classList.toggle("open", chatAbierto);
-  if (chatAbierto) {
-    noLeidos = 0;
-    $("fab-badge").style.display = "none";
-    const mm = $("chat-msgs-mobile");
-    mm.scrollTop = mm.scrollHeight;
-    $("chat-inp-mobile").focus();
-  }
+function toggleChatMobile(){
+  chatAbierto=!chatAbierto;
+  $("chat-popup").classList.toggle("open",chatAbierto);
+  if(chatAbierto){noLeidos=0;$("fab-badge").style.display="none";const mm=$("chat-msgs-mobile");mm.scrollTop=mm.scrollHeight;$("chat-inp-mobile").focus();}
 }
 </script>
 </body>
