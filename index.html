@@ -191,7 +191,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v1.4</p>
+    <p class="setup-sub">v1.5</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -520,7 +520,7 @@ function onMensaje(msg){
   if(tipo==="nueva-ronda"){
     if(d.categorias?.length){CATEGORIAS=d.categorias;renderCategorias();}
     if(typeof d.turno==="number") turnoAnfitrion=d.turno;
-    msgSistema(`▶ Nueva ronda — letra ${d.letra} — turno de ${anfitrionActual()} 👑`);
+    msgSistema(`▶ Nueva ronda — letra ${d.letra} — anfitrión: ${anfitrionActual()} 👑`);
     empezarRonda(d.letra);
   }
 
@@ -559,9 +559,7 @@ function onMensaje(msg){
 function nuevaRonda(){
   if(Object.keys(jugadores).length<2){alert("Esperá que se una al menos una persona más");return;}
   const letra=LETRAS[Math.floor(Math.random()*LETRAS.length)];
-  const nuevoTurno=(turnoAnfitrion+1)%ordenJugadores.length;
-  enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:nuevoTurno});
-  turnoAnfitrion=nuevoTurno;
+  enviar("nueva-ronda",{letra,categorias:CATEGORIAS,turno:turnoAnfitrion});
   empezarRonda(letra);
 }
 
@@ -637,6 +635,8 @@ function calcularPuntos(letra){
 
 function mostrarResultados(){
   faseActual="resultados";clearTimeout(timeoutEspera);
+  // Avanzar el turno acá, no en nuevaRonda
+  turnoAnfitrion=(turnoAnfitrion+1)%ordenJugadores.length;
   const letra=$("letra").textContent, nombres=Object.keys(jugadores);
   calcularPuntos(letra);
   nombres.forEach(n=>puntajesAcum[n]=(puntajesAcum[n]||0)+(puntajesRonda[n]||0));
@@ -673,10 +673,7 @@ function mostrarResultados(){
   $("tabla-resultados").innerHTML=`<table class="rtable"><thead><tr>${thead}</tr></thead><tbody>${tbody}<tr class="fila-total">${filaPts}</tr><tr class="fila-acum">${filaAcum}</tr></tbody></table>`;
 
   if(esAnfitrion) setTimeout(()=>$("btn-nueva").style.display="flex",400);
-  else{
-    const prox=ordenJugadores[(turnoAnfitrion+1)%ordenJugadores.length];
-    $("letra-sub").textContent=`Le toca iniciar la siguiente ronda a ${prox} 👑`;
-  }
+  else $("letra-sub").textContent=`Le toca iniciar la siguiente ronda a ${anfitrionActual()} 👑`;
 }
 
 function recalcAcum(nombre){
@@ -755,13 +752,12 @@ function renderCategorias(){
 }
 function renderJugadores(){
   const anfitrion=anfitrionActual();
-  const prox=ordenJugadores[(turnoAnfitrion+1)%ordenJugadores.length];
   $("players-row").innerHTML=Object.values(jugadores).map(j=>{
     let cls="chip";
     if(j.nombre===miNombre)cls+=" yo";
     else if(j.entregado)cls+=" entregado";
     else if(j.listo)cls+=" listo";
-    const corona=j.nombre===anfitrion?" 👑":(faseActual==="resultados"&&j.nombre===prox?" 👑?":"");
+    const corona=j.nombre===anfitrion?" 👑":"";
     return `<div class="${cls}">${j.nombre}${j.nombre===miNombre?" (vos)":""}${corona}${j.entregado?" ✓":""}</div>`;
   }).join("");
 }
