@@ -417,6 +417,70 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
 
 .legend { font-size: 11px; color: var(--text-3); margin-top: 8px; }
 
+/* ── MODO SELECTOR ────────────────────────────────────── */
+.modo-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.modo-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg);
+}
+.modo-option:hover { border-color: var(--border-strong); background: var(--surface); }
+.modo-option.selected { border-color: var(--text); background: var(--surface); }
+.modo-option input[type=radio] { margin-top: 2px; accent-color: var(--text); flex-shrink: 0; }
+.modo-label { font-size: 13px; font-weight: 600; }
+.modo-desc { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+/* ── CATEGORÍAS PERSONALIZADAS ────────────────────────── */
+#custom-cats { display: none; margin-bottom: 14px; }
+.custom-cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.custom-cat-row { display: flex; gap: 6px; align-items: center; }
+.custom-cat-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--bg);
+  outline: none;
+  color: var(--text);
+}
+.custom-cat-input:focus { border-color: var(--border-strong); background: var(--surface); }
+.btn-remove-cat {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-remove-cat:hover { border-color: var(--accent); color: var(--accent); }
+.btn-add-cat {
+  background: none;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text-2);
+  width: 100%;
+  transition: all 0.15s;
+}
+.btn-add-cat:hover { border-color: var(--text); color: var(--text); }
+
 /* ── MOBILE ───────────────────────────────────────────── */
 @media (max-width: 700px) {
   #screen-game { height: auto; min-height: 100vh; overflow: auto; }
@@ -443,7 +507,43 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
     </div>
-    <button class="btn btn-dark btn-full" onclick="crearSala()">Crear sala nueva</button>
+
+    <!-- Selector de modo (solo visible al crear) -->
+    <div id="bloque-modo">
+      <div style="font-size:12px;color:var(--text-2);font-weight:500;margin-bottom:8px;">Tipo de juego</div>
+      <div class="modo-grid">
+        <label class="modo-option selected" onclick="seleccionarModo('tradicional',this)">
+          <input type="radio" name="modo" value="tradicional" checked />
+          <div>
+            <div class="modo-label">🎲 Tradicional</div>
+            <div class="modo-desc">Nombre, Ciudad, Animal, Color...</div>
+          </div>
+        </label>
+        <label class="modo-option" onclick="seleccionarModo('oficina',this)">
+          <input type="radio" name="modo" value="oficina" />
+          <div>
+            <div class="modo-label">🏢 De oficina</div>
+            <div class="modo-desc">Insultos, Palabras en la cama, Maneras de agendar al amante...</div>
+          </div>
+        </label>
+        <label class="modo-option" onclick="seleccionarModo('personalizado',this)">
+          <input type="radio" name="modo" value="personalizado" />
+          <div>
+            <div class="modo-label">✏️ Personalizado</div>
+            <div class="modo-desc">Definí tus propias categorías</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Editor de categorías personalizadas -->
+      <div id="custom-cats">
+        <div style="font-size:12px;color:var(--text-2);font-weight:500;margin-bottom:6px;">Tus categorías <span id="custom-count" style="color:var(--text-3)">(0/10)</span></div>
+        <div class="custom-cat-list" id="custom-cat-list"></div>
+        <button class="btn-add-cat" onclick="agregarCategoria()" id="btn-add-cat">+ Agregar categoría</button>
+      </div>
+    </div>
+
+    <button class="btn btn-dark btn-full" onclick="crearSala()" style="margin-top:4px;">Crear sala</button>
     <div class="divider">— o unite a una sala —</div>
     <div class="field">
       <label>Código de sala</label>
@@ -551,7 +651,21 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; ba
 <script>
 // ── CONFIG ────────────────────────────────────────────────
 const ABLY_KEY = "bJht8w.8EuVXg:UgP79w2cCdSsiHUhFLAwVWYg14oMlRXMekWRIKQqSbs";
-const CATEGORIAS = ["Nombre","Maneras de agendar al amante","País o ciudad","Animal","Flor, Fruta o verdura","Color","Palabras en la cama","Musica","Insultos","Cosa u objeto"];
+
+const MODOS = {
+  tradicional: [
+    "Nombre","Apellido","Ciudad","Animal",
+    "Fruta o verdura","Color","Marca",
+    "País","Película","Cosa u objeto"
+  ],
+  oficina: [
+    "Nombre","Maneras de agendar al amante","País o ciudad","Animal",
+    "Flor, Fruta o verdura","Color","Palabras en la cama",
+    "Música","Insultos","Cosa u objeto"
+  ]
+};
+
+let CATEGORIAS = [...MODOS.tradicional]; // se sobreescribe al arrancar
 const LETRAS = "ABCDEFGHIJLMNOPRSTUVZ".split("");
 
 // ── ESTADO ────────────────────────────────────────────────
@@ -564,6 +678,9 @@ let puntajesAcum = {};    // { nombre: pts }
 let puntajesRonda = {};   // { nombre: pts } — editables
 let chatAbierto = false;
 let noLeidos = 0;
+let timeoutEspera = null; // timer para expulsar desconectados
+let faseActual = "esperando"; // "esperando" | "jugando" | "resultados"
+let letraActualRonda = "";
 
 // ── HELPERS ───────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -575,24 +692,77 @@ function normalizar(s) {
     .replace(/[^a-z0-9\s]/g,"").replace(/\s+/g," ").trim();
 }
 
-// ── SETUP ─────────────────────────────────────────────────
+// ── SETUP UI ──────────────────────────────────────────────
+let modoSeleccionado = "tradicional";
+
+function seleccionarModo(modo, el) {
+  modoSeleccionado = modo;
+  document.querySelectorAll(".modo-option").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  $("custom-cats").style.display = modo === "personalizado" ? "block" : "none";
+  if (modo === "personalizado" && $("custom-cat-list").children.length === 0) {
+    // Arrancar con 5 filas vacías
+    for (let i = 0; i < 5; i++) agregarCategoria();
+  }
+}
+
+function agregarCategoria() {
+  const list = $("custom-cat-list");
+  if (list.children.length >= 10) return;
+  const idx = list.children.length;
+  const row = document.createElement("div");
+  row.className = "custom-cat-row";
+  row.innerHTML = `
+    <input class="custom-cat-input" placeholder="Categoría ${idx+1}" maxlength="40" oninput="actualizarContador()" />
+    <button class="btn-remove-cat" onclick="eliminarCategoria(this)" title="Eliminar">✕</button>`;
+  list.appendChild(row);
+  actualizarContador();
+}
+
+function eliminarCategoria(btn) {
+  btn.parentElement.remove();
+  actualizarContador();
+}
+
+function actualizarContador() {
+  const n = $("custom-cat-list").children.length;
+  $("custom-count").textContent = `(${n}/10)`;
+  $("btn-add-cat").style.display = n >= 10 ? "none" : "block";
+}
+
+function leerCategoriasCustom() {
+  return Array.from($("custom-cat-list").querySelectorAll(".custom-cat-input"))
+    .map(i => i.value.trim()).filter(v => v.length > 0);
+}
+
+// ── CREAR / UNIRSE ────────────────────────────────────────
+function crearSala() {
+  const n = $("inp-nombre").value.trim();
+  if (!n) { alert("Poné tu nombre"); return; }
+
+  if (modoSeleccionado === "personalizado") {
+    const cats = leerCategoriasCustom();
+    if (cats.length < 3) { alert("Agregá al menos 3 categorías"); return; }
+    CATEGORIAS = cats;
+  } else {
+    CATEGORIAS = [...MODOS[modoSeleccionado]];
+  }
+
+  miNombre = n; soyCreador = true; sala = genCodigo();
+  arrancar();
+}
 window.onload = () => {
   $("screen-setup").style.display = "flex";
   $("inp-nombre").focus();
 };
 
-function crearSala() {
-  const n = $("inp-nombre").value.trim();
-  if (!n) { alert("Poné tu nombre"); return; }
-  miNombre = n; soyCreador = true; sala = genCodigo();
-  arrancar();
-}
 function unirse() {
   const n = $("inp-nombre").value.trim();
   const c = $("inp-sala").value.trim().toUpperCase();
   if (!n) { alert("Poné tu nombre"); return; }
   if (c.length < 4) { alert("Ingresá el código de sala"); return; }
   miNombre = n; soyCreador = false; sala = c;
+  // Al unirse, las categorías las manda el anfitrión via sync-estado
   arrancar();
 }
 
@@ -637,18 +807,51 @@ function onMensaje(msg) {
 
   if (tipo === "hola" || tipo === "hola-back") {
     const n = d.nombre || d.from;
-    if (!jugadores[n]) {
+    const esNuevo = !jugadores[n];
+    if (esNuevo) {
+      if (Object.keys(jugadores).length >= 6) return; // sala llena
       jugadores[n] = { nombre: n, listo: true, entregado: false };
       puntajesAcum[n] = 0;
       msgSistema(`${n} se unió a la sala 👋`);
     }
     renderJugadores();
-    if (tipo === "hola") enviar("hola-back", { nombre: miNombre });
+    if (tipo === "hola") {
+      enviar("hola-back", { nombre: miNombre });
+      // Si soy el anfitrión, sincronizo el estado actual con el recién llegado
+      if (soyCreador && esNuevo) {
+        enviar("sync-estado", {
+          para: n,
+          fase: faseActual,
+          letra: letraActualRonda,
+          puntajesAcum: { ...puntajesAcum },
+          categorias: CATEGORIAS,
+        });
+      }
+    }
   }
 
   if (tipo === "nueva-ronda") {
+    if (d.categorias && d.categorias.length) {
+      CATEGORIAS = d.categorias;
+      renderCategorias();
+    }
     msgSistema(`▶ Nueva ronda — letra ${d.letra}`);
     empezarRonda(d.letra);
+  }
+
+  if (tipo === "sync-estado") {
+    if (d.para !== miNombre) return;
+    Object.assign(puntajesAcum, d.puntajesAcum || {});
+    if (d.categorias && d.categorias.length) {
+      CATEGORIAS = d.categorias;
+      renderCategorias();
+    }
+    if (d.fase === "jugando" && d.letra) {
+      msgSistema(`▶ Te uniste en medio de una ronda — letra ${d.letra}`);
+      empezarRonda(d.letra);
+    } else if (d.fase === "resultados") {
+      msgSistema("Te uniste al final de una ronda, esperá la próxima.");
+    }
   }
 
   if (tipo === "stop") {
@@ -690,13 +893,17 @@ function onMensaje(msg) {
 function nuevaRonda() {
   if (Object.keys(jugadores).length < 2) { alert("Esperá que se una al menos una persona más"); return; }
   const letra = LETRAS[Math.floor(Math.random()*LETRAS.length)];
-  enviar("nueva-ronda", { letra });
+  enviar("nueva-ronda", { letra, categorias: CATEGORIAS });
   empezarRonda(letra);
 }
 
 function empezarRonda(letra) {
   juegoActivo = true; bloqueado = false;
+  faseActual = "jugando";
+  letraActualRonda = letra;
   respuestasRonda = {};
+  clearTimeout(timeoutEspera);
+  timeoutEspera = null;
   Object.keys(jugadores).forEach(n => jugadores[n].entregado = false);
 
   $("letra").textContent = letra;
@@ -750,11 +957,43 @@ function mostrarStop(msg) {
 function verificarResultados() {
   const total = Object.keys(jugadores).length;
   const listos = Object.keys(respuestasRonda).length;
-  if (listos < total) {
-    $("letra-sub").textContent = `Esperando ${total-listos} jugador${total-listos>1?"es":""}...`;
+
+  if (listos >= total) {
+    clearTimeout(timeoutEspera);
+    mostrarResultados();
     return;
   }
-  mostrarResultados();
+
+  const faltaN = total - listos;
+  $("letra-sub").textContent = `Esperando respuestas de ${faltaN} jugador${faltaN>1?"es":""}... (15s)`;
+
+  // Iniciar timeout solo la primera vez (cuando listos === 1 significa que recién se activó el stop)
+  if (!timeoutEspera) {
+    let segs = 15;
+    const intervalo = setInterval(() => {
+      segs--;
+      const faltanAun = Object.keys(jugadores).length - Object.keys(respuestasRonda).length;
+      if (faltanAun <= 0 || segs <= 0) {
+        clearInterval(intervalo);
+        return;
+      }
+      $("letra-sub").textContent = `Esperando respuestas de ${faltanAun} jugador${faltanAun>1?"es":""}... (${segs}s)`;
+    }, 1000);
+
+    timeoutEspera = setTimeout(() => {
+      clearInterval(intervalo);
+      timeoutEspera = null;
+      // Expulsar a los que no respondieron
+      const ausentes = Object.keys(jugadores).filter(n => !respuestasRonda[n]);
+      ausentes.forEach(n => {
+        if (n === miNombre) return;
+        delete jugadores[n];
+        msgSistema(`⚠️ ${n} no respondió a tiempo y fue removido de la ronda`);
+      });
+      renderJugadores();
+      mostrarResultados();
+    }, 15000);
+  }
 }
 
 function calcularPuntos(letra) {
@@ -794,6 +1033,8 @@ function calcularPuntos(letra) {
 }
 
 function mostrarResultados() {
+  faseActual = "resultados";
+  clearTimeout(timeoutEspera);
   const letra = $("letra").textContent;
   const nombres = Object.keys(jugadores);
   calcularPuntos(letra);
