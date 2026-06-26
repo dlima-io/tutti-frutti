@@ -295,8 +295,10 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
   .letra-grande { font-size:52px; }
   .config-dropdown { right:0; left:auto; }
   .topbar-sep, .topbar-sala, .topbar-jugadores, .topbar-conn, .topbar-actions { display:none; }
-  .btn-hamburguesa { display:flex; }
-  .btn-chat-mobile { display:inline-flex; }
+  #topbar-mobile-btns { display:flex !important; }
+  /* Botones mobile: mismo tamaño */
+  .btn-hamburguesa { display:flex; width:32px; height:32px; padding:0; align-items:center; justify-content:center; font-size:15px; }
+  .btn-chat-mobile { display:inline-flex; width:32px; height:32px; padding:0; align-items:center; justify-content:center; font-size:15px; }
 }
 </style>
 </head>
@@ -306,7 +308,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v2.0.1</p>
+    <p class="setup-sub">v2.0.2</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -385,11 +387,13 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
         <button class="btn-salir" onclick="salirSala()">🚪 Salir</button>
       </div>
 
-      <!-- Botón chat + hamburguesa solo mobile -->
-      <button class="btn-chat-mobile" onclick="toggleChatMobile(event)" id="btn-chat-mobile">
-        💬<span class="chat-mobile-badge" id="chat-mobile-badge"></span>
-      </button>
-      <button class="btn-hamburguesa" onclick="toggleMobileMenu(event)">☰</button>
+      <!-- Botones solo mobile, alineados a la derecha -->
+      <div style="display:none;margin-left:auto;gap:6px;align-items:center;" id="topbar-mobile-btns">
+        <button class="btn-chat-mobile" onclick="toggleChatMobile(event)" id="btn-chat-mobile">
+          💬<span class="chat-mobile-badge" id="chat-mobile-badge"></span>
+        </button>
+        <button class="btn-hamburguesa" onclick="toggleMobileMenu(event)">☰</button>
+      </div>
     </div>
 
     <!-- Menú hamburguesa mobile -->
