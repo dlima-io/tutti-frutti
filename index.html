@@ -56,20 +56,57 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
   height:100vh;
 }
 
-/* Topbar fija que ocupa las dos columnas */
+/* ── TOPBAR ── */
 .topbar {
   grid-column:1 / -1;
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:0;
+  height:44px;
   padding:0 14px;
   background:var(--surface);
   border-bottom:1px solid var(--border);
   font-size:12px;
   color:var(--text-2);
+  overflow:hidden;
 }
-.topbar-title { font-weight:700; font-size:13px; color:var(--text); margin-right:4px; }
-.topbar-actions { margin-left:auto; display:flex; align-items:center; gap:6px; position:relative; }
+.topbar-brand { font-weight:700; font-size:13px; color:var(--text); flex-shrink:0; margin-right:14px; }
+.topbar-sep { width:1px; height:20px; background:var(--border); flex-shrink:0; margin:0 10px; }
+.topbar-sala { font-size:11px; color:var(--text-3); flex-shrink:0; }
+.topbar-sala strong { font-size:13px; letter-spacing:2px; color:var(--text-2); }
+.topbar-jugadores { display:flex; align-items:center; gap:5px; flex:1; overflow:hidden; padding:0 4px; }
+.topbar-chip { padding:2px 8px; border-radius:20px; border:1px solid var(--border); font-size:11px; background:var(--bg); color:var(--text-2); white-space:nowrap; flex-shrink:0; }
+.topbar-chip.yo { border-color:var(--border-strong); color:var(--text); font-weight:600; }
+.topbar-chip.anfitrion { border-color:var(--amber); color:var(--amber); background:var(--amber-dim); }
+.topbar-chip.yo.anfitrion { border-color:var(--amber); color:var(--amber); background:var(--amber-dim); font-weight:700; }
+.topbar-conn { display:flex; align-items:center; gap:5px; flex-shrink:0; margin-left:auto; padding-left:10px; }
+.topbar-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; margin-left:10px; }
+
+/* Hamburguesa mobile — oculta en desktop */
+.btn-hamburguesa { display:none; background:none; border:1px solid var(--border); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:16px; color:var(--text-2); line-height:1; }
+.btn-hamburguesa:hover { border-color:var(--border-strong); color:var(--text); }
+
+/* Menú hamburguesa mobile */
+.mobile-menu {
+  display:none;
+  position:fixed;
+  top:44px; left:0; right:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+  z-index:250;
+  padding:10px 14px;
+  flex-direction:column;
+  gap:6px;
+}
+.mobile-menu.open { display:flex; }
+.mobile-menu-row { display:flex; align-items:center; justify-content:space-between; font-size:13px; padding:4px 0; }
+.mobile-menu-label { color:var(--text-2); font-size:12px; }
+.mobile-menu-val { color:var(--text); font-weight:500; }
+.mobile-menu-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:2px; }
+.mobile-menu-sep { height:1px; background:var(--border); margin:4px 0; }
+.mobile-menu-btn { display:flex; align-items:center; gap:8px; padding:8px 0; font-size:13px; color:var(--text); cursor:pointer; background:none; border:none; font-family:inherit; width:100%; }
+.mobile-menu-btn:hover { color:var(--accent); }
 
 .col-juego { overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:10px; }
 .col-chat { border-left:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; overflow:hidden; }
@@ -202,6 +239,9 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
   .chat-fab { display:flex; }
   .letra-grande { font-size:52px; }
   .config-dropdown { right:0; left:auto; }
+  /* En mobile la topbar solo muestra marca + hamburguesa */
+  .topbar-sep, .topbar-sala, .topbar-jugadores, .topbar-conn, .topbar-actions { display:none; }
+  .btn-hamburguesa { display:flex; margin-left:auto; }
 }
 </style>
 </head>
@@ -211,7 +251,7 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-setup">
   <div class="setup-card">
     <div class="setup-title">🍓 Tutti Frutti</div>
-    <p class="setup-sub">v1.6</p>
+    <p class="setup-sub">v2.0</p>
     <div class="field">
       <label>Tu nombre</label>
       <input id="inp-nombre" placeholder="Ej: Sofi" maxlength="20" />
@@ -252,14 +292,24 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
 <div id="screen-game">
   <div class="game-layout">
 
-    <!-- Topbar fija (ocupa ambas columnas) -->
+    <!-- Topbar fija -->
     <div class="topbar">
-      <span class="topbar-title">🍓 Tutti Frutti</span>
-      <div class="dot amarillo" id="dot"></div>
-      <span id="estado-conn">Conectando...</span>
+      <span class="topbar-brand">🍓 Tutti Frutti</span>
+
+      <div class="topbar-sep"></div>
+      <div class="topbar-sala">Sala&nbsp;<strong id="topbar-sala-code">—</strong></div>
+
+      <div class="topbar-sep"></div>
+      <div class="topbar-jugadores" id="topbar-jugadores"></div>
+
+      <div class="topbar-conn">
+        <div class="dot amarillo" id="dot"></div>
+        <span id="estado-conn">Conectando...</span>
+      </div>
+
       <div class="topbar-actions">
         <div class="config-wrap">
-          <button class="btn-icon" id="btn-config" style="display:none;" onclick="toggleConfig(event)" title="Configuración de sala">⚙️</button>
+          <button class="btn-icon" id="btn-config" style="display:none;" onclick="toggleConfig(event)">⚙️ Editar partida</button>
           <div class="config-dropdown" id="config-dropdown">
             <div class="cfg-title">Cambiar juego</div>
             <div class="cfg-item" onclick="cambiarModo('tradicional')">
@@ -277,8 +327,26 @@ html, body { height: 100%; font-family: system-ui,-apple-system,sans-serif; back
             </div>
           </div>
         </div>
-        <button class="btn-salir" onclick="salirSala()">Salir</button>
+        <button class="btn-salir" onclick="salirSala()">🚪 Salir</button>
       </div>
+
+      <!-- Hamburguesa solo mobile -->
+      <button class="btn-hamburguesa" onclick="toggleMobileMenu(event)">☰</button>
+    </div>
+
+    <!-- Menú hamburguesa mobile -->
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-row">
+        <span class="mobile-menu-label">Sala</span>
+        <span class="mobile-menu-val" id="mm-sala-code">—</span>
+      </div>
+      <div>
+        <div class="mobile-menu-label" style="margin-bottom:6px;">Jugadores</div>
+        <div class="mobile-menu-chips" id="mm-jugadores"></div>
+      </div>
+      <div class="mobile-menu-sep"></div>
+      <button class="mobile-menu-btn" id="mm-btn-config" style="display:none;" onclick="abrirConfigMobile()">⚙️ Editar partida</button>
+      <button class="mobile-menu-btn" onclick="confirmarSalir()">🚪 Salir de la sala</button>
     </div>
 
     <!-- Columna juego -->
@@ -455,6 +523,8 @@ function arrancar(){
   puntajesAcum[miNombre]=0;
   $("screen-setup").style.display="none";
   $("screen-game").style.display="block";
+  $("topbar-sala-code").textContent=sala;
+  $("mm-sala-code").textContent=sala;
   renderCategorias();
   renderJugadores();
   conectarAbly();
@@ -463,7 +533,8 @@ function arrancar(){
     b.style.display="block";
     b.innerHTML=`Compartí este código con tus amigos:<span class="sala-code">${sala}</span>Esperá que todos se unan y tocá ▶ Nueva ronda.`;
     $("btn-nueva").style.display="flex";
-    $("btn-config").style.display="flex"; // visible antes de empezar
+    $("btn-config").style.display="flex";
+    $("mm-btn-config").style.display="flex";
   }
 }
 
@@ -601,6 +672,7 @@ function empezarRonda(letra){
   $("stop-banner").style.display="none";$("card-resultados").style.display="none";
   $("card-form").style.display="block";$("info-sala").style.display="none";$("lbl-editar").style.display="none";
   $("btn-config").style.display="none"; // oculto durante la ronda
+  $("mm-btn-config").style.display="none";
   document.querySelectorAll(".cat-input").forEach(inp=>{
     inp.value="";inp.disabled=false;inp.className="cat-input";inp.placeholder=`Con ${letra}...`;
   });
@@ -669,7 +741,11 @@ function mostrarResultados(){
   nombres.forEach(n=>puntajesAcum[n]=(puntajesAcum[n]||0)+(puntajesRonda[n]||0));
   $("card-form").style.display="none";$("card-resultados").style.display="block";
   const esAnfitrion=soyAnfitrionAhora();
-  if(esAnfitrion){$("lbl-editar").style.display="block";$("btn-config").style.display="flex";}
+  if(esAnfitrion){
+    $("lbl-editar").style.display="block";
+    $("btn-config").style.display="flex";
+    $("mm-btn-config").style.display="flex";
+  }
   $("letra-titulo").textContent="Ronda terminada";$("letra-sub").textContent="";
 
   let thead=`<th style="width:110px">Categoría</th>`;
@@ -724,7 +800,32 @@ function toggleConfig(e){
   e.stopPropagation();
   $("config-dropdown").classList.toggle("open");
 }
-document.addEventListener("click",()=>$("config-dropdown")?.classList.remove("open"));
+document.addEventListener("click",()=>{
+  $("config-dropdown")?.classList.remove("open");
+  $("mobile-menu")?.classList.remove("open");
+});
+
+function toggleMobileMenu(e){
+  e.stopPropagation();
+  $("mobile-menu").classList.toggle("open");
+}
+
+function abrirConfigMobile(){
+  $("mobile-menu").classList.remove("open");
+  // Mostrar un submenú inline en el menú mobile o reusar el modal
+  // Abrimos directamente un pequeño alert-select
+  const op=confirm("¿Qué querés cambiar?\n\nOK = Editar categorías\nCancelar = Cambiar tipo de juego");
+  if(op) abrirModalCats();
+  else {
+    const tipo=prompt("Escribí el tipo:\n- tradicional\n- oficina");
+    if(tipo==="tradicional"||tipo==="oficina") cambiarModo(tipo);
+  }
+}
+
+function confirmarSalir(){
+  $("mobile-menu").classList.remove("open");
+  salirSala();
+}
 
 function cambiarModo(modo){
   $("config-dropdown").classList.remove("open");
@@ -779,6 +880,8 @@ function renderCategorias(){
 }
 function renderJugadores(){
   const anfitrion=anfitrionActual();
+
+  // Card jugadores (en juego)
   $("players-row").innerHTML=Object.values(jugadores).map(j=>{
     let cls="chip";
     if(j.nombre===miNombre)cls+=" yo";
@@ -786,6 +889,20 @@ function renderJugadores(){
     else if(j.listo)cls+=" listo";
     const corona=j.nombre===anfitrion?" 👑":"";
     return `<div class="${cls}">${j.nombre}${j.nombre===miNombre?" (vos)":""}${corona}${j.entregado?" ✓":""}</div>`;
+  }).join("");
+
+  // Topbar chips (desktop)
+  $("topbar-jugadores").innerHTML=Object.values(jugadores).map(j=>{
+    const esAnfitrion=j.nombre===anfitrion;
+    let cls="topbar-chip"+(j.nombre===miNombre?" yo":"")+(esAnfitrion?" anfitrion":"");
+    return `<div class="${cls}">${j.nombre}${esAnfitrion?" 👑":""}${j.entregado?" ✓":""}</div>`;
+  }).join("");
+
+  // Menú mobile chips
+  $("mm-jugadores").innerHTML=Object.values(jugadores).map(j=>{
+    const esAnfitrion=j.nombre===anfitrion;
+    let cls="topbar-chip"+(j.nombre===miNombre?" yo":"")+(esAnfitrion?" anfitrion":"");
+    return `<div class="${cls}">${j.nombre}${esAnfitrion?" 👑":""}${j.entregado?" ✓":""}</div>`;
   }).join("");
 }
 function setConn(c,t){$("dot").className="dot "+c;$("estado-conn").textContent=t;}
